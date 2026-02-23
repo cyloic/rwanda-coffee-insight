@@ -109,7 +109,6 @@ The application features an intuitive user interface with the following key scre
 ![ss8](https://github.com/user-attachments/assets/9bb4f730-915b-4be8-aa4e-a3dfdce69f20)
 
 
-### Figma Design
 
 
 ### System Architecture

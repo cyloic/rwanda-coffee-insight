@@ -2,6 +2,10 @@
 
 A comprehensive platform for exploring Rwanda's coffee market insights, pricing trends, regional analysis, and ROI calculations. This application provides data-driven insights to coffee producers, traders, and investors looking to understand market dynamics and optimize their business decisions.
 
+## 🎥 Video Demo
+
+[Watch App Demo on Google Drive](https://drive.google.com/file/d/1ndsd2jQ5vSCpl_OijlOeY2ozMqLyhQJc/view?usp=sharing)
+
 ## GitHub Repository
 
 [Rwanda Coffee Insight - GitHub](https://github.com/cyloic/rwanda-coffee-insight)
@@ -79,31 +83,31 @@ The application will be available at `http://localhost:5173` with automatic hot-
 The application features an intuitive user interface with the following key screens:
 
 #### Dashboard & Price Overview
-![Dashboard Preview](./Coffee%20UI%20Screenshots/ss1.jpg)
+![Dashboard Preview](./Coffee%20UI%20Screenshots/ss1.jpg?raw=true)
 *Main dashboard with key metrics and coffee price overview*
 
 #### Price Chart & Trends
-![Price Chart](./Coffee%20UI%20Screenshots/ss2.jpg)
+![Price Chart](./Coffee%20UI%20Screenshots/ss2.jpg?raw=true)
 *Interactive price trend analysis and visualization*
 
 #### Regional Analysis
-![Regional Analysis](./Coffee%20UI%20Screenshots/ss3.jpg)
+![Regional Analysis](./Coffee%20UI%20Screenshots/ss3.jpg?raw=true)
 *Regional breakdown of market data with location mapping*
 
 #### Market Opportunities
-![Opportunities](./Coffee%20UI%20Screenshots/sss4.jpg)
+![Opportunities](./Coffee%20UI%20Screenshots/sss4.jpg?raw=true)
 *Top opportunities in the coffee supply chain*
 
 #### ROI Calculator
-![ROI Calculator](./Coffee%20UI%20Screenshots/ss5.jpg)
+![ROI Calculator](./Coffee%20UI%20Screenshots/ss5.jpg?raw=true)
 *Return on investment calculation tool*
 
 #### Market Analytics
-![Analytics](./Coffee%20UI%20Screenshots/ss77.jpg)
+![Analytics](./Coffee%20UI%20Screenshots/ss77.jpg?raw=true)
 *Detailed market analytics and statistics*
 
 #### Data Management
-![Data View](./Coffee%20UI%20Screenshots/ss8.jpg)
+![Data View](./Coffee%20UI%20Screenshots/ss8.jpg?raw=true)
 *Comprehensive data tables and export options*
 
 ### Figma Design

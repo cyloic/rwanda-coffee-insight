@@ -1,0 +1,211 @@
+import { useState } from "react";
+import { REGIONS } from "@/data/sampleData";
+import { Calculator, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+
+interface Results {
+  bestCase: number;
+  expected: number;
+  worstCase: number;
+  annualizedROI: number;
+  totalReturn: number;
+  breakEvenMonths: number;
+}
+
+function calcResults(amount: number, regionId: string, term: number): Results {
+  const region = REGIONS.find((r) => r.id === regionId)!;
+  const baseROI = region.roi / 100;
+  const risk = region.riskPercent / 100;
+
+  const best = amount * (1 + baseROI * 1.35) * (term / 12);
+  const expected = amount * (1 + baseROI * (term / 12));
+  const worst = amount * (1 + (baseROI - risk) * (term / 12));
+
+  return {
+    bestCase: Math.round(best),
+    expected: Math.round(expected),
+    worstCase: Math.round(worst),
+    annualizedROI: Math.round(baseROI * 100 * (12 / term) * 10) / 10,
+    totalReturn: Math.round((expected - amount) / amount * 100 * 10) / 10,
+    breakEvenMonths: Math.round(12 / baseROI),
+  };
+}
+
+function TrafficLight({ value, thresholds }: { value: number; thresholds: [number, number] }) {
+  const color =
+    value >= thresholds[1] ? "bg-rwandaGreen" :
+    value >= thresholds[0] ? "bg-gold" : "bg-destructive";
+  return <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} flex-shrink-0`} />;
+}
+
+export default function ROICalculator() {
+  const [amount, setAmount] = useState(150000);
+  const [regionId, setRegionId] = useState("huye");
+  const [term, setTerm] = useState(12);
+  const [results, setResults] = useState<Results | null>(null);
+
+  const region = REGIONS.find((r) => r.id === regionId)!;
+
+  const handleCalculate = () => {
+    setResults(calcResults(amount, regionId, term));
+  };
+
+  const fmt = (n: number) =>
+    n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+  return (
+    <div className="container mx-auto px-4 md:px-6 py-6 space-y-6 animate-fade-in">
+      <div className="border-b border-border pb-4">
+        <p className="section-heading mb-1">Investment Modelling</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">ROI Calculator</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Model expected returns under best, expected, and worst-case scenarios
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Input form */}
+        <div className="lg:col-span-2 rounded-lg border border-border bg-card p-5 space-y-6">
+          <p className="section-heading">Input Parameters</p>
+
+          {/* Investment amount slider */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-baseline">
+              <label className="text-sm text-foreground font-medium">Investment Amount</label>
+              <span className="font-data text-lg font-bold text-gold">{fmt(amount)}</span>
+            </div>
+            <input
+              type="range"
+              min={50000}
+              max={300000}
+              step={5000}
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              className="w-full accent-gold cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground font-data">
+              <span>$50K</span><span>$300K</span>
+            </div>
+          </div>
+
+          {/* Region dropdown */}
+          <div className="space-y-2">
+            <label className="text-sm text-foreground font-medium">Target Region</label>
+            <select
+              value={regionId}
+              onChange={(e) => setRegionId(e.target.value)}
+              className="w-full rounded border border-border bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-gold"
+            >
+              {REGIONS.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name} — Score {r.score} | ROI {r.roi}%
+                </option>
+              ))}
+            </select>
+            <div className="text-xs text-muted-foreground">
+              Risk rate: <span className="font-data text-foreground">{region.riskPercent}%</span> ·{" "}
+              Farmers: <span className="font-data text-foreground">{region.farmerCount.toLocaleString()}</span>
+            </div>
+          </div>
+
+          {/* Loan term dropdown */}
+          <div className="space-y-2">
+            <label className="text-sm text-foreground font-medium">Loan Term</label>
+            <select
+              value={term}
+              onChange={(e) => setTerm(Number(e.target.value))}
+              className="w-full rounded border border-border bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-gold"
+            >
+              <option value={6}>6 months (Short-term)</option>
+              <option value={12}>12 months (Annual)</option>
+              <option value={18}>18 months (Extended)</option>
+              <option value={24}>24 months (Long-term)</option>
+            </select>
+          </div>
+
+          <button
+            onClick={handleCalculate}
+            className="w-full flex items-center justify-center gap-2 rounded bg-gold py-2.5 text-sm font-bold text-gold-foreground hover:bg-gold-light transition-colors"
+          >
+            <Calculator className="h-4 w-4" />
+            Calculate Returns
+          </button>
+        </div>
+
+        {/* Results */}
+        <div className="lg:col-span-3 space-y-4">
+          {!results ? (
+            <div className="h-full rounded-lg border border-dashed border-border bg-card flex items-center justify-center min-h-[320px]">
+              <div className="text-center text-muted-foreground">
+                <Calculator className="h-8 w-8 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">Configure parameters and click Calculate</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Scenario cards */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: "Best Case", value: results.bestCase, icon: TrendingUp, color: "text-rwandaGreen", borderColor: "border-rwandaGreen/30 bg-rwandaGreen/5" },
+                  { label: "Expected", value: results.expected, icon: TrendingUp, color: "text-gold", borderColor: "border-gold/30 bg-gold/5" },
+                  { label: "Worst Case", value: results.worstCase, icon: TrendingDown, color: "text-destructive", borderColor: "border-destructive/30 bg-destructive/5" },
+                ].map(({ label, value, icon: Icon, color, borderColor }) => (
+                  <div key={label} className={`rounded-lg border p-4 ${borderColor}`}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Icon className={`h-3.5 w-3.5 ${color}`} />
+                      <span className="text-xs text-muted-foreground">{label}</span>
+                    </div>
+                    <p className={`font-data text-xl font-bold ${color}`}>{fmt(value)}</p>
+                    <p className="text-xs text-muted-foreground font-data mt-1">
+                      {value > amount ? "+" : ""}{fmt(value - amount)} return
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Key metrics */}
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="section-heading mb-3">Return Metrics</p>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { label: "Total Return", value: `${results.totalReturn}%` },
+                    { label: "Annualized ROI", value: `${results.annualizedROI}%` },
+                    { label: "Break-even", value: `${results.breakEvenMonths}mo` },
+                  ].map((m) => (
+                    <div key={m.label}>
+                      <p className="text-xs text-muted-foreground">{m.label}</p>
+                      <p className="font-data text-lg font-bold text-foreground">{m.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Risk breakdown */}
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="section-heading mb-3">Risk Breakdown</p>
+                <div className="space-y-2.5">
+                  {[
+                    { label: "Credit Risk", value: region.riskPercent, thresholds: [15, 25] as [number, number], desc: `${region.riskPercent}% historical default rate` },
+                    { label: "Weather Risk", value: 100 - region.weatherScore, thresholds: [20, 30] as [number, number], desc: "Based on 5-year climate data" },
+                    { label: "Infrastructure Risk", value: 100 - region.infrastructureScore, thresholds: [20, 30] as [number, number], desc: "Road access & processing capacity" },
+                    { label: "Market Risk", value: 14, thresholds: [15, 25] as [number, number], desc: "Price volatility index" },
+                  ].map(({ label, value, thresholds, desc }) => (
+                    <div key={label} className="flex items-center gap-3">
+                      <TrafficLight value={100 - value} thresholds={[100 - thresholds[1], 100 - thresholds[0]]} />
+                      <div className="flex-1 flex justify-between items-center">
+                        <div>
+                          <p className="text-sm text-foreground font-medium">{label}</p>
+                          <p className="text-xs text-muted-foreground">{desc}</p>
+                        </div>
+                        <span className="font-data text-sm text-muted-foreground">{value}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

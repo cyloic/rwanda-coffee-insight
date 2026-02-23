@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Rwanda Coffee Investment Platform - Design System */
+
+@layer base {
+  :root {
+    /* Core brand palette */
+    --background: 24 15% 8%;
+    --foreground: 40 20% 92%;
+
+    --card: 24 12% 12%;
+    --card-foreground: 40 20% 92%;
+
+    --popover: 24 12% 12%;
+    --popover-foreground: 40 20% 92%;
+
+    /* Coffee brown primary */
+    --primary: 20 35% 36%;
+    --primary-foreground: 40 20% 95%;
+
+    /* Rwanda green */
+    --green: 152 100% 33%;
+    --green-foreground: 0 0% 100%;
+
+    /* Gold accent */
+    --gold: 43 65% 52%;
+    --gold-foreground: 24 15% 8%;
+
+    --secondary: 24 12% 18%;
+    --secondary-foreground: 40 20% 85%;
+
+    --muted: 24 10% 16%;
+    --muted-foreground: 40 10% 55%;
+
+    --accent: 43 65% 52%;
+    --accent-foreground: 24 15% 8%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 40 20% 95%;
+
+    --border: 24 12% 20%;
+    --input: 24 12% 20%;
+    --ring: 43 65% 52%;
+
+    --radius: 0.375rem;
+
+    /* Sidebar */
+    --sidebar-background: 24 15% 6%;
+    --sidebar-foreground: 40 20% 85%;
+    --sidebar-primary: 43 65% 52%;
+    --sidebar-primary-foreground: 24 15% 8%;
+    --sidebar-accent: 24 12% 14%;
+    --sidebar-accent-foreground: 40 20% 85%;
+    --sidebar-border: 24 12% 16%;
+    --sidebar-ring: 43 65% 52%;
+
+    /* Score color tokens */
+    --score-high: 152 100% 33%;
+    --score-mid: 43 65% 52%;
+    --score-low: 0 72% 51%;
+
+    /* Chart palette */
+    --chart-historical: 43 65% 52%;
+    --chart-forecast: 152 100% 45%;
+    --chart-band: 152 100% 33%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Number/data monospace */
+  .font-data {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  }
+}
+
+@layer components {
+  /* Stat card glow */
+  .stat-card {
+    @apply rounded-lg border border-border bg-card p-5 relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(24 12% 14%) 100%);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, hsl(var(--gold)), hsl(var(--green)));
+  }
+
+  /* Data table rows */
+  .data-row {
+    @apply border-b border-border last:border-0 hover:bg-secondary transition-colors;
+  }
+
+  /* Score badge */
+  .score-high { @apply text-sm font-data font-semibold; color: hsl(var(--score-high)); }
+  .score-mid  { @apply text-sm font-data font-semibold; color: hsl(var(--score-mid));  }
+  .score-low  { @apply text-sm font-data font-semibold; color: hsl(var(--score-low));  }
+
+  /* Leaflet map override */
+  .leaflet-container {
+    background: hsl(24 12% 10%) !important;
+    border-radius: 0.375rem;
+  }
+
+  .leaflet-popup-content-wrapper {
+    background: hsl(var(--card)) !important;
+    color: hsl(var(--card-foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+  }
+
+  .leaflet-popup-tip {
+    background: hsl(var(--card)) !important;
+  }
+
+  .leaflet-popup-close-button {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  /* Gold underline heading */
+  .section-heading {
+    @apply text-sm font-semibold uppercase tracking-widest;
+    color: hsl(var(--gold));
+    letter-spacing: 0.12em;
+  }
+
+  /* Navbar glass */
+  .navbar-glass {
+    background: hsl(24 15% 6% / 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border));
+  }
+}
+
+/* Recharts tooltips */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.375rem !important;
+  color: hsl(var(--foreground)) !important;
+}

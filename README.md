@@ -83,31 +83,31 @@ The application will be available at `http://localhost:5173` with automatic hot-
 The application features an intuitive user interface with the following key screens:
 
 #### Dashboard & Price Overview
-![Dashboard Preview](./Coffee%20UI%20Screenshots/ss1.jpg?raw=true)
+![Dashboard Preview](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss1.jpg)
 *Main dashboard with key metrics and coffee price overview*
 
 #### Price Chart & Trends
-![Price Chart](./Coffee%20UI%20Screenshots/ss2.jpg?raw=true)
+![Price Chart](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss2.jpg)
 *Interactive price trend analysis and visualization*
 
 #### Regional Analysis
-![Regional Analysis](./Coffee%20UI%20Screenshots/ss3.jpg?raw=true)
+![Regional Analysis](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss3.jpg)
 *Regional breakdown of market data with location mapping*
 
 #### Market Opportunities
-![Opportunities](./Coffee%20UI%20Screenshots/sss4.jpg?raw=true)
+![Opportunities](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/sss4.jpg)
 *Top opportunities in the coffee supply chain*
 
 #### ROI Calculator
-![ROI Calculator](./Coffee%20UI%20Screenshots/ss5.jpg?raw=true)
+![ROI Calculator](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss5.jpg)
 *Return on investment calculation tool*
 
 #### Market Analytics
-![Analytics](./Coffee%20UI%20Screenshots/ss77.jpg?raw=true)
+![Analytics](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss77.jpg)
 *Detailed market analytics and statistics*
 
 #### Data Management
-![Data View](./Coffee%20UI%20Screenshots/ss8.jpg?raw=true)
+![Data View](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss8.jpg)
 *Comprehensive data tables and export options*
 
 ### Figma Design

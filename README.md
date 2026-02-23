@@ -83,36 +83,34 @@ The application will be available at `http://localhost:5173` with automatic hot-
 The application features an intuitive user interface with the following key screens:
 
 #### Dashboard & Price Overview
-(https://github.com/user-attachments/assets/0dd3010b-03e0-4e44-bff5-7781720b3243)
+
+![ss1](https://github.com/user-attachments/assets/a384a57d-2b55-48ff-8eb3-c6c540155934)
 
 
 #### Price Chart & Trends
-![Price Chart](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss2.jpg)
-*Interactive price trend analysis and visualization*
+![ss3](https://github.com/user-attachments/assets/59caf322-7e3d-4e5c-974a-c4390453c50f)
+
 
 #### Regional Analysis
-![Regional Analysis](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss3.jpg)
-*Regional breakdown of market data with location mapping*
+![sss4](https://github.com/user-attachments/assets/106e0917-d5af-4954-9acb-935edb883394)
+
 
 #### Market Opportunities
-![Opportunities](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/sss4.jpg)
-*Top opportunities in the coffee supply chain*
+![ss2](https://github.com/user-attachments/assets/fd3eb416-5b2f-48a4-b926-fe808b519be8)
+
 
 #### ROI Calculator
-![ROI Calculator](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss5.jpg)
-*Return on investment calculation tool*
 
-#### Market Analytics
-![Analytics](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss77.jpg)
-*Detailed market analytics and statistics*
+![ss5](https://github.com/user-attachments/assets/93686107-3fe4-49e0-90d7-175d79dca0bb)
 
-#### Data Management
-![Data View](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss8.jpg)
-*Comprehensive data tables and export options*
+
+
+#### Platform Overview
+![ss8](https://github.com/user-attachments/assets/9bb4f730-915b-4be8-aa4e-a3dfdce69f20)
+
 
 ### Figma Design
 
-[View complete design mockups on Figma](https://figma.com) *(Design link to be updated)*
 
 ### System Architecture
 

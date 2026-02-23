@@ -83,7 +83,8 @@ The application will be available at `http://localhost:5173` with automatic hot-
 The application features an intuitive user interface with the following key screens:
 
 #### Dashboard & Price Overview
-![Dashboard Preview](https://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss1.jpg)
+![Dashboard Preview](http![ss1](https://github.com/user-attachments/assets/0dd3010b-03e0-4e44-bff5-7781720b3243)
+s://raw.githubusercontent.com/cyloic/rwanda-coffee-insight/main/Coffee%20UI%20Screenshots/ss1.jpg)
 *Main dashboard with key metrics and coffee price overview*
 
 #### Price Chart & Trends

@@ -2,25 +2,16 @@ import StatCards from "@/components/StatCards";
 import RwandaMap from "@/components/RwandaMap";
 import TopOpportunities from "@/components/TopOpportunities";
 import PriceChart from "@/components/PriceChart";
-import { REGIONS, Region, generatePriceHistory, generateForecast, LSTM_7_DAY_PREDICTIONS } from "@/data/sampleData";
+import { REGIONS, Region, LSTM_7_DAY_PREDICTIONS } from "@/data/sampleData";
 import { formatPrice, rwfToUsd } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { usePriceHistory } from "@/hooks/usePriceHistory";
 import "leaflet/dist/leaflet.css";
 
-// Coffee prices interface
 interface CoffeePrices {
-  globalBenchmark: {
-    date: string;
-    usd: number;
-    rwf: number;
-    source: string;
-  };
-  rwandaExport: {
-    usd: number;
-    rwf: number;
-    source: string;
-  };
+  globalBenchmark: { date: string; usd: number; rwf: number; source: string };
+  rwandaExport: { usd: number; rwf: number; source: string };
   premium: string;
   lastUpdated: string;
 }
@@ -31,59 +22,41 @@ export default function Index() {
   const [livePrices, setLivePrices] = useState<CoffeePrices | null>(null);
   const [pricesLoading, setPricesLoading] = useState(true);
 
-  // Fetch live prices from API
+  // Live price history + forecast (falls back to static data locally)
+  const { history, forecast, isLive } = usePriceHistory();
+
+  const lastPrice = history[history.length - 1].price;
+  const predictedPrice = forecast[forecast.length - 1].price;
+  const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
+  const peakDay = forecast.reduce((best, d, i) => d.price > best.price ? { price: d.price, day: i + 1 } : best, { price: 0, day: 0 });
+  const signal = Number(priceChange) > 1 ? `HOLD — Wait ${peakDay.day} days` : Number(priceChange) < -1 ? "SELL NOW" : "NEUTRAL";
+
+  // Fetch current benchmark + premium prices (separate concern from history)
   useEffect(() => {
     async function fetchLivePrices() {
       try {
         setPricesLoading(true);
         const response = await fetch('/api/coffee-prices');
-        
         if (response.ok) {
           const result = await response.json();
-          if (result.success) {
-            setLivePrices(result.data);
-          }
+          if (result.success) setLivePrices(result.data);
         }
-      } catch (error) {
-        console.error('Failed to fetch live prices:', error);
-        // Fallback to static values if API fails
+      } catch {
+        // Fallback shown only when API is unavailable (local dev)
         setLivePrices({
-          globalBenchmark: {
-            date: '2026-01-01',
-            usd: 3.64,
-            rwf: 4913,
-            source: 'FRED (Other Mild Arabica)'
-          },
-          rwandaExport: {
-            usd: 6.20,
-            rwf: 8370,
-            source: 'NAEB (Rwanda Official)'
-          },
-          premium: '70.3%',
-          lastUpdated: new Date().toISOString()
+          globalBenchmark: { date: '2026-01-01', usd: 3.64, rwf: 4913, source: 'FRED (Other Mild Arabica)' },
+          rwandaExport: { usd: 6.20, rwf: 8370, source: 'NAEB (Rwanda Official)' },
+          premium: '70.0%',
+          lastUpdated: new Date().toISOString(),
         });
       } finally {
         setPricesLoading(false);
       }
     }
-
     fetchLivePrices();
-    
-    // Refresh prices every hour
     const interval = setInterval(fetchLivePrices, 3600000);
-    
     return () => clearInterval(interval);
   }, []);
-
-  const history = useMemo(() => generatePriceHistory(), []);
-  const lastPrice = history[history.length - 1].price;
-  const forecast = useMemo(() => generateForecast(lastPrice), [lastPrice]);
-  const predictedPrice = forecast[forecast.length - 1].price;
-  const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
-
-  // Find optimal sell day (peak price in forecast)
-  const peakDay = forecast.reduce((best, d, i) => d.price > best.price ? { price: d.price, day: i + 1 } : best, { price: 0, day: 0 });
-  const signal = Number(priceChange) > 1 ? `HOLD — Wait ${peakDay.day} days` : Number(priceChange) < -1 ? "SELL NOW" : "NEUTRAL";
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-6 space-y-6 animate-fade-in">
@@ -285,7 +258,13 @@ export default function Index() {
 
       {/* Price forecast chart */}
       <div className="rounded-lg border border-border bg-card p-4">
-        <PriceChart title={`Coffee Price: Historical + 30-Day Forecast (${currency}/kg)`} showForecast={true} height={240} />
+        <PriceChart
+          title={`Coffee Price: Historical + 30-Day Forecast (${currency}/kg)${isLive ? " · Live" : ""}`}
+          showForecast={true}
+          height={240}
+          history={history}
+          forecast={forecast}
+        />
         <div className="mt-3 flex flex-wrap gap-6 border-t border-border pt-3">
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Current Price</p>

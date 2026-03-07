@@ -1,18 +1,16 @@
 import PriceChart from "@/components/PriceChart";
-import { useMemo } from "react";
-import { generatePriceHistory, generateForecast } from "@/data/sampleData";
 import { Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { formatPrice, rwfToUsd } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
+import { usePriceHistory } from "@/hooks/usePriceHistory";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
 export default function PricePredictor() {
   const { currency } = useCurrency();
-  const history = useMemo(() => generatePriceHistory(), []);
+  const { history, forecast, isLive } = usePriceHistory();
   const lastPrice = history[history.length - 1].price;
-  const forecast = useMemo(() => generateForecast(lastPrice), [lastPrice]);
   const predictedPrice = forecast[forecast.length - 1].price;
   const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
   const peakDay = forecast.reduce((best, d, i) => d.price > best.price ? { price: d.price, day: i + 1 } : best, { price: 0, day: 0 });
@@ -85,7 +83,13 @@ export default function PricePredictor() {
 
       {/* Historical chart */}
       <div className="rounded-lg border border-border bg-card p-4">
-        <PriceChart title={`90-Day Historical Price (${currency}/kg)`} showForecast={false} height={240} />
+        <PriceChart
+          title={`Historical Price (${currency}/kg)${isLive ? " · Live" : ""}`}
+          showForecast={false}
+          height={240}
+          history={history}
+          historyDays={isLive ? 180 : 90}
+        />
       </div>
 
       {/* Forecast chart */}

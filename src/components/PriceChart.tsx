@@ -1,16 +1,20 @@
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Area, AreaChart, ReferenceLine,
+  ResponsiveContainer, ReferenceLine,
 } from "recharts";
-import { useMemo } from "react";
 import { generatePriceHistory, generateForecast } from "@/data/sampleData";
 import { formatPrice, rwfToUsd } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
+import type { PricePoint, ForecastPoint } from "@/hooks/usePriceHistory";
 
 interface PriceChartProps {
   showForecast?: boolean;
   height?: number;
   title?: string;
+  history?: PricePoint[];
+  forecast?: ForecastPoint[];
+  // How many most-recent history days to display (default 90)
+  historyDays?: number;
 }
 
 const CustomTooltip = ({ active, payload, label, currency }: any) => {
@@ -29,11 +33,24 @@ const CustomTooltip = ({ active, payload, label, currency }: any) => {
   );
 };
 
-export default function PriceChart({ showForecast = true, height = 260, title }: PriceChartProps) {
+export default function PriceChart({
+  showForecast = true,
+  height = 260,
+  title,
+  history: historyProp,
+  forecast: forecastProp,
+  historyDays = 90,
+}: PriceChartProps) {
   const { currency } = useCurrency();
-  const history = useMemo(() => generatePriceHistory(), []);
-  const lastPrice = history[history.length - 1].price;
-  const forecast = useMemo(() => generateForecast(lastPrice), [lastPrice]);
+
+  // Use live props if provided, otherwise fall back to static data
+  const staticHistory = generatePriceHistory();
+  const staticForecast = generateForecast(staticHistory[staticHistory.length - 1].price);
+  const rawHistory = historyProp ?? staticHistory;
+  const forecast = forecastProp ?? staticForecast;
+
+  // Limit history to most recent N days for chart readability
+  const history = rawHistory.slice(-historyDays);
 
   const combined = [
     ...history.map((d) => ({ ...d, historical: d.price, predicted: undefined, upperBand: undefined, lowerBand: undefined })),

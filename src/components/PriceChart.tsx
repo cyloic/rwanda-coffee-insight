@@ -4,6 +4,8 @@ import {
 } from "recharts";
 import { useMemo } from "react";
 import { generatePriceHistory, generateForecast } from "@/data/sampleData";
+import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface PriceChartProps {
   showForecast?: boolean;
@@ -11,7 +13,7 @@ interface PriceChartProps {
   title?: string;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, currency }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded border border-border bg-card px-3 py-2 text-xs shadow-lg">
@@ -19,7 +21,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       {payload.map((entry: any) => (
         entry.value && (
           <p key={entry.dataKey} style={{ color: entry.color }} className="font-data font-semibold">
-            {entry.name}: ${typeof entry.value === "number" ? entry.value.toFixed(2) : entry.value}
+            {entry.name}: {formatPrice(currency === "USD" ? rwfToUsd(typeof entry.value === "number" ? entry.value : 0) : (typeof entry.value === "number" ? entry.value : 0), currency)}
           </p>
         )
       ))}
@@ -28,6 +30,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function PriceChart({ showForecast = true, height = 260, title }: PriceChartProps) {
+  const { currency } = useCurrency();
   const history = useMemo(() => generatePriceHistory(), []);
   const lastPrice = history[history.length - 1].price;
   const forecast = useMemo(() => generateForecast(lastPrice), [lastPrice]);
@@ -72,12 +75,12 @@ export default function PriceChart({ showForecast = true, height = 260, title }:
           <YAxis
             domain={["auto", "auto"]}
             tick={{ fill: "hsl(40 10% 55%)", fontSize: 10, fontFamily: "monospace" }}
-            tickFormatter={(v) => `$${v}`}
+            tickFormatter={(v) => currency === "USD" ? `$${rwfToUsd(v).toFixed(2)}` : `${Math.round(v / 1000)}K RWF`}
             axisLine={false}
             tickLine={false}
-            width={48}
+            width={currency === "USD" ? 55 : 65}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip currency={currency} />} />
           {showForecast && (
             <ReferenceLine
               x={today}

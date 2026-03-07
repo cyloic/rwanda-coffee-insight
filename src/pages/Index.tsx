@@ -2,12 +2,78 @@ import StatCards from "@/components/StatCards";
 import RwandaMap from "@/components/RwandaMap";
 import TopOpportunities from "@/components/TopOpportunities";
 import PriceChart from "@/components/PriceChart";
-import { REGIONS, Region, generatePriceHistory, generateForecast } from "@/data/sampleData";
-import { useState, useMemo } from "react";
+import { REGIONS, Region, generatePriceHistory, generateForecast, LSTM_7_DAY_PREDICTIONS } from "@/data/sampleData";
+import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useState, useMemo, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 
+// Coffee prices interface
+interface CoffeePrices {
+  globalBenchmark: {
+    date: string;
+    usd: number;
+    rwf: number;
+    source: string;
+  };
+  rwandaExport: {
+    usd: number;
+    rwf: number;
+    source: string;
+  };
+  premium: string;
+  lastUpdated: string;
+}
+
 export default function Index() {
+  const { currency } = useCurrency();
   const [selected, setSelected] = useState<Region | null>(null);
+  const [livePrices, setLivePrices] = useState<CoffeePrices | null>(null);
+  const [pricesLoading, setPricesLoading] = useState(true);
+
+  // Fetch live prices from API
+  useEffect(() => {
+    async function fetchLivePrices() {
+      try {
+        setPricesLoading(true);
+        const response = await fetch('/api/coffee-prices');
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setLivePrices(result.data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch live prices:', error);
+        // Fallback to static values if API fails
+        setLivePrices({
+          globalBenchmark: {
+            date: '2026-01-01',
+            usd: 3.64,
+            rwf: 4913,
+            source: 'FRED (Other Mild Arabica)'
+          },
+          rwandaExport: {
+            usd: 6.20,
+            rwf: 8370,
+            source: 'NAEB (Rwanda Official)'
+          },
+          premium: '70.3%',
+          lastUpdated: new Date().toISOString()
+        });
+      } finally {
+        setPricesLoading(false);
+      }
+    }
+
+    fetchLivePrices();
+    
+    // Refresh prices every hour
+    const interval = setInterval(fetchLivePrices, 3600000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const history = useMemo(() => generatePriceHistory(), []);
   const lastPrice = history[history.length - 1].price;
@@ -35,6 +101,138 @@ export default function Index() {
         <div className="flex items-center gap-2 text-xs text-muted-foreground font-data">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-rwandaGreen animate-pulse" />
           Last updated: {new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+        </div>
+      </div>
+
+      {/* Live Market Prices */}
+      {livePrices && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Global Benchmark */}
+          <div className="stat-card">
+            <p className="section-heading mb-2">Global Benchmark</p>
+            {pricesLoading ? (
+              <div className="animate-pulse">
+                <div className="h-8 bg-muted rounded w-32 mb-2"></div>
+                <div className="h-4 bg-muted rounded w-24"></div>
+              </div>
+            ) : (
+              <>
+                <p className="font-data text-3xl font-bold text-foreground tracking-tight">
+                  {currency === "USD" 
+                    ? `$${livePrices.globalBenchmark.usd.toFixed(2)}`
+                    : `${livePrices.globalBenchmark.rwf.toLocaleString()} RWF`
+                  }/kg
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {currency === "USD" 
+                    ? `${livePrices.globalBenchmark.rwf.toLocaleString()} RWF`
+                    : `$${livePrices.globalBenchmark.usd.toFixed(2)} USD`
+                  }
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-2">{livePrices.globalBenchmark.source}</p>
+              </>
+            )}
+          </div>
+
+          {/* Rwanda Export Price */}
+          <div className="stat-card">
+            <p className="section-heading mb-2">Rwanda Export Price</p>
+            {pricesLoading ? (
+              <div className="animate-pulse">
+                <div className="h-8 bg-muted rounded w-32 mb-2"></div>
+                <div className="h-4 bg-muted rounded w-24"></div>
+              </div>
+            ) : (
+              <>
+                <p className="font-data text-3xl font-bold text-gold tracking-tight">
+                  {currency === "USD" 
+                    ? `$${livePrices.rwandaExport.usd.toFixed(2)}`
+                    : `${livePrices.rwandaExport.rwf.toLocaleString()} RWF`
+                  }/kg
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {currency === "USD" 
+                    ? `${livePrices.rwandaExport.rwf.toLocaleString()} RWF`
+                    : `$${livePrices.rwandaExport.usd.toFixed(2)} USD`
+                  }
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-2">{livePrices.rwandaExport.source}</p>
+              </>
+            )}
+          </div>
+
+          {/* Rwanda Premium */}
+          <div className="stat-card">
+            <p className="section-heading mb-2">Rwanda Premium</p>
+            {pricesLoading ? (
+              <div className="animate-pulse">
+                <div className="h-8 bg-muted rounded w-32 mb-2"></div>
+                <div className="h-4 bg-muted rounded w-24"></div>
+              </div>
+            ) : (
+              <>
+                <p className="font-data text-3xl font-bold text-rwandaGreen tracking-tight">
+                  {livePrices.premium}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  above global benchmark
+                </p>
+                <div className="mt-3 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 text-rwandaGreen">
+                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                    <polyline points="16 7 22 7 22 13"></polyline>
+                  </svg>
+                  <span className="text-xs font-data text-rwandaGreen">Specialty-grade Arabica</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* LSTM Predictions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="stat-card">
+          <p className="section-heading mb-2">LSTM Prediction (Next Day)</p>
+          <p className="font-data text-3xl font-bold text-rwandaGreen tracking-tight">
+            {currency === "USD" 
+              ? `$${LSTM_7_DAY_PREDICTIONS[0].priceUSD}`
+              : `${LSTM_7_DAY_PREDICTIONS[0].priceRWF.toLocaleString()} RWF`
+            }/kg
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {currency === "USD" 
+              ? `${LSTM_7_DAY_PREDICTIONS[0].priceRWF.toLocaleString()} RWF`
+              : `$${LSTM_7_DAY_PREDICTIONS[0].priceUSD} USD`
+            }
+          </p>
+          <div className="mt-3 flex items-center gap-1.5">
+            <span className="text-xs font-data text-green-600">
+              Confidence: {LSTM_7_DAY_PREDICTIONS[0].confidence}%
+            </span>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <p className="section-heading mb-2">7-Day LSTM Forecast</p>
+          <p className="font-data text-3xl font-bold text-foreground tracking-tight">
+            {currency === "USD" 
+              ? `$${LSTM_7_DAY_PREDICTIONS[6].priceUSD}`
+              : `${LSTM_7_DAY_PREDICTIONS[6].priceRWF.toLocaleString()} RWF`
+            }/kg
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Day 7 prediction
+          </p>
+          <div className="mt-3">
+            <span className="text-xs text-muted-foreground">
+              Trend: 
+              {LSTM_7_DAY_PREDICTIONS[6].priceRWF > LSTM_7_DAY_PREDICTIONS[0].priceRWF 
+                ? " Increasing" 
+                : " Declining"
+              }
+            </span>
+          </div>
         </div>
       </div>
 
@@ -87,15 +285,15 @@ export default function Index() {
 
       {/* Price forecast chart */}
       <div className="rounded-lg border border-border bg-card p-4">
-        <PriceChart title="Coffee Price: Historical + 30-Day Forecast" showForecast={true} height={240} />
+        <PriceChart title={`Coffee Price: Historical + 30-Day Forecast (${currency}/kg)`} showForecast={true} height={240} />
         <div className="mt-3 flex flex-wrap gap-6 border-t border-border pt-3">
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Current Price</p>
-            <p className="font-data text-lg font-bold text-gold">${lastPrice.toFixed(2)}/kg</p>
+            <p className="font-data text-lg font-bold text-gold">{formatPrice(currency === "USD" ? rwfToUsd(lastPrice) : lastPrice, currency)}/kg</p>
           </div>
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">30-Day Forecast</p>
-            <p className="font-data text-lg font-bold text-rwandaGreen">${predictedPrice.toFixed(2)}/kg</p>
+            <p className="font-data text-lg font-bold text-rwandaGreen">{formatPrice(currency === "USD" ? rwfToUsd(predictedPrice) : predictedPrice, currency)}/kg</p>
           </div>
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Signal</p>

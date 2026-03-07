@@ -77,8 +77,7 @@ export default function About() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {[
-                ["ICO — Intl. Coffee Organization", "Global commodity prices, export data", "Monthly"],
+              {[                ["FRED API", "Global benchmark coffee prices (Other Mild Arabica)", "Daily"],                ["ICO — Intl. Coffee Organization", "Global commodity prices, export data", "Monthly"],
                 ["NAEB Rwanda", "Farmer registration, cooperative data", "Quarterly"],
                 ["Rwanda Meteorological Agency", "Rainfall, temperature, weather risk", "Daily"],
                 ["World Bank Open Data", "Infrastructure, rural road quality", "Annual"],
@@ -104,7 +103,7 @@ export default function About() {
         <p className="text-sm text-muted-foreground leading-relaxed">
           This platform is developed under the <span className="text-foreground font-semibold">African Leadership University (ALU)</span> research initiative in partnership with Rwandan financial institutions. For API access, investment inquiries, or research collaboration:
         </p>
-        <div className="mt-3 font-data text-sm text-gold">research@alu.edu / coffeeinvest@alu.edu</div>
+        <div className="mt-3 font-data text-sm text-gold">l.cyusa@alustudent.com / cyusaloic078@gmail.com</div>
         <p className="mt-4 text-xs text-muted-foreground border-t border-border pt-3">
           <strong className="text-foreground">Disclaimer:</strong> Investment scores and price forecasts are provided for analytical and research purposes only. They do not constitute financial advice. Historical performance does not guarantee future results. All investments carry risk.
         </p>

@@ -1,6 +1,10 @@
 // Rwanda Coffee Investment Platform — ML-Driven Data
-// CORRECTED: Uses actual Rwanda green coffee export prices ($6-7/kg)
-// Last updated: 2026-02-21
+// UPDATED: Now uses REAL LSTM predictions from trained model
+// Last updated: 2026-03-05
+
+// Import REAL ML predictions from trained model
+import mlData from './website_ml_data.json';
+import next7Days from '../../deployment/next_7_days.json';
 
 export interface Region {
   id: string;
@@ -112,59 +116,48 @@ export const REGIONS: Region[] = [
   },
 ];
 
-// Generate 90-day price history - CORRECTED TO ACTUAL RWANDA PRICES
-// Using green coffee export prices: $6-7/kg (Feb 2026 market reality)
+// REAL ML PREDICTIONS from trained LSTM model
+export const ML_PRICE_HISTORY = mlData.priceHistory;
+export const ML_PRICE_FORECAST = mlData.priceForecast;
+export const LSTM_7_DAY_PREDICTIONS = next7Days;
+export const MODEL_INFO = mlData.modelInfo;
+
+// Generate 90-day price history - REAL DATA from trained model
 export function generatePriceHistory() {
-  const data = [];
-  const now = new Date();
-  let price = 6.2;  // CORRECTED: Actual Rwanda export price (was 252!)
-
-  for (let i = 89; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-
-    // Slight upward trend with noise (realistic commodity fluctuation)
-    const trend = 0.008;  // ~0.8% daily trend
-    const noise = (Math.random() - 0.5) * 0.15;  // ±$0.075 daily variance
-    price = Math.max(5.8, Math.min(7.2, price + trend + noise));
-
-    data.push({
-      date: date.toISOString().split("T")[0],
-      price: Math.round(price * 100) / 100,
-    });
-  }
-  return data;
+  return ML_PRICE_HISTORY.map((item: any) => ({
+    date: item.date,
+    price: item.price
+  }));
 }
 
-// Generate 30-day forecast - CORRECTED SCALE
+// Generate 30-day forecast - REAL DATA from trained model
+// CI bands derived from per-day confidence: higher confidence = narrower band
 export function generateForecast(lastPrice: number) {
-  const data = [];
-  const now = new Date();
-  let price = lastPrice;
+  return ML_PRICE_FORECAST.map((item: any) => {
+    const bandPct = (100 - item.confidence) / 100 * 0.15;
+    return {
+      date: item.date,
+      price: item.price,
+      confidence: item.confidence,
+      upperBand: Math.round(item.price * (1 + bandPct)),
+      lowerBand: Math.round(item.price * (1 - bandPct)),
+    };
+  });
+}
 
-  for (let i = 1; i <= 30; i++) {
-    const date = new Date(now);
-    date.setDate(date.getDate() + i);
+// Export LSTM next-day prediction
+export function getNextDayPrediction() {
+  return LSTM_7_DAY_PREDICTIONS[0];
+}
 
-    const trend = 0.01;  // Slight upward trend
-    const noise = (Math.random() - 0.4) * 0.1;
-    price = Math.max(lastPrice - 0.5, price + trend + noise);
-
-    const ci = 0.1 + i * 0.02;  // Confidence interval grows over time
-
-    data.push({
-      date: date.toISOString().split("T")[0],
-      price: Math.round(price * 100) / 100,
-      upperBand: Math.round((price + ci) * 100) / 100,
-      lowerBand: Math.round((price - ci) * 100) / 100,
-    });
-  }
-  return data;
+// Export 7-day LSTM predictions
+export function get7DayPredictions() {
+  return LSTM_7_DAY_PREDICTIONS;
 }
 
 export const STATS = [
   { label: "Avg. Portfolio Returns", value: "489%", sub: "over 5-year horizon", trend: "+12% YoY" },
   { label: "Registered Farmers", value: "211K", sub: "across 5 regions", trend: "+8.3K this year" },
   { label: "Historical Default Rate", value: "14.8%", sub: "sector benchmark", trend: "-2.1% vs 2023" },
-  { label: "Capital Deployed", value: "$5.2M", sub: "active loans", trend: "+$1.1M Q4" },
+  { label: "Capital Deployed", value: "6.7B RWF", sub: "active loans", trend: "+1.4B Q4" },
 ];

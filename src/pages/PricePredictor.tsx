@@ -1,21 +1,24 @@
 import PriceChart from "@/components/PriceChart";
 import { useMemo } from "react";
 import { generatePriceHistory, generateForecast } from "@/data/sampleData";
-import { TrendingUp, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { useCurrency } from "@/context/CurrencyContext";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
 export default function PricePredictor() {
+  const { currency } = useCurrency();
   const history = useMemo(() => generatePriceHistory(), []);
   const lastPrice = history[history.length - 1].price;
-  const firstPrice = history[0].price;
   const forecast = useMemo(() => generateForecast(lastPrice), [lastPrice]);
   const predictedPrice = forecast[forecast.length - 1].price;
   const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
   const peakDay = forecast.reduce((best, d, i) => d.price > best.price ? { price: d.price, day: i + 1 } : best, { price: 0, day: 0 });
   const recommendation = Number(priceChange) > 1 ? `WAIT ${peakDay.day} DAYS` : Number(priceChange) < -1 ? "SELL NOW" : "HOLD";
-  const today = new Date().toISOString().split("T")[0];
+
+  const avgConfidence = Math.round(forecast.reduce((sum, d) => sum + (d.confidence ?? 70), 0) / forecast.length);
 
   const forecastData = forecast.map((d) => ({
     date: d.date.slice(5),
@@ -31,7 +34,7 @@ export default function PricePredictor() {
         <p className="text-muted-foreground mb-1">{label}</p>
         {payload[0] && (
           <p className="font-data font-semibold text-rwandaGreen">
-            Forecast: ${payload[0].value?.toFixed(2)}
+            Forecast: {formatPrice(currency === "USD" ? rwfToUsd(payload[0].value) : payload[0].value, currency)}
           </p>
         )}
       </div>
@@ -51,10 +54,10 @@ export default function PricePredictor() {
       {/* Comparison cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Current Price", value: `$${lastPrice.toFixed(2)}`, sub: "per kg (USD)", color: "text-gold" },
-          { label: "30-Day Forecast", value: `$${predictedPrice.toFixed(2)}`, sub: "per kg (USD)", color: "text-rwandaGreen" },
+          { label: "Current Price", value: formatPrice(currency === "USD" ? rwfToUsd(lastPrice) : lastPrice, currency), sub: `per kg (${currency})`, color: "text-gold" },
+          { label: "30-Day Forecast", value: formatPrice(currency === "USD" ? rwfToUsd(predictedPrice) : predictedPrice, currency), sub: `per kg (${currency})`, color: "text-rwandaGreen" },
           { label: "Expected Change", value: `+${priceChange}%`, sub: "over 30 days", color: "text-rwandaGreen" },
-          { label: "Confidence", value: `${Math.max(70, Math.min(95, Math.round(85 - Math.abs(Number(priceChange)) * 0.5)))}%`, sub: "model accuracy", color: "text-foreground" },
+          { label: "Confidence", value: `${avgConfidence}%`, sub: "model accuracy", color: "text-foreground" },
         ].map((card) => (
           <div key={card.label} className="stat-card">
             <p className="section-heading mb-2">{card.label}</p>
@@ -82,7 +85,7 @@ export default function PricePredictor() {
 
       {/* Historical chart */}
       <div className="rounded-lg border border-border bg-card p-4">
-        <PriceChart title="90-Day Historical Price (USD/kg)" showForecast={false} height={240} />
+        <PriceChart title={`90-Day Historical Price (${currency}/kg)`} showForecast={false} height={240} />
       </div>
 
       {/* Forecast chart */}
@@ -112,10 +115,10 @@ export default function PricePredictor() {
             <YAxis
               domain={["auto", "auto"]}
               tick={{ fill: "hsl(40 10% 55%)", fontSize: 10, fontFamily: "monospace" }}
-              tickFormatter={(v) => `$${v}`}
+              tickFormatter={(v) => currency === "USD" ? `$${rwfToUsd(v).toFixed(2)}` : `${Math.round(v / 1000)}K RWF`}
               axisLine={false}
               tickLine={false}
-              width={48}
+              width={currency === "USD" ? 55 : 65}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area

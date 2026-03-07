@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { REGIONS } from "@/data/sampleData";
 import { Calculator, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface Results {
   bestCase: number;
@@ -38,7 +40,8 @@ function TrafficLight({ value, thresholds }: { value: number; thresholds: [numbe
 }
 
 export default function ROICalculator() {
-  const [amount, setAmount] = useState(150000);
+  const { currency } = useCurrency();
+  const [amount, setAmount] = useState(19200000); // 150,000 USD * 1280
   const [regionId, setRegionId] = useState("huye");
   const [term, setTerm] = useState(12);
   const [results, setResults] = useState<Results | null>(null);
@@ -49,8 +52,7 @@ export default function ROICalculator() {
     setResults(calcResults(amount, regionId, term));
   };
 
-  const fmt = (n: number) =>
-    n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  const fmt = (n: number) => formatPrice(currency === "USD" ? rwfToUsd(n) : n, currency);
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-6 space-y-6 animate-fade-in">
@@ -75,15 +77,15 @@ export default function ROICalculator() {
             </div>
             <input
               type="range"
-              min={50000}
-              max={300000}
-              step={5000}
+              min={64000000}
+              max={384000000}
+              step={6400000}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
               className="w-full accent-gold cursor-pointer"
             />
             <div className="flex justify-between text-xs text-muted-foreground font-data">
-              <span>$50K</span><span>$300K</span>
+              <span>{currency === "USD" ? "$50K" : "64M RWF"}</span><span>{currency === "USD" ? "$300K" : "384M RWF"}</span>
             </div>
           </div>
 

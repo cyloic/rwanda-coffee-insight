@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { TrendingUp, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useCurrency } from "@/context/CurrencyContext";
 
 const NAV_LINKS = [
   { to: "/", label: "Dashboard" },
@@ -13,6 +14,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { currency, toggleCurrency } = useCurrency();
 
   return (
     <nav className="navbar-glass sticky top-0 z-50">
@@ -48,10 +50,19 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Status pill */}
-        <div className="hidden md:flex items-center gap-2 text-xs">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-rwandaGreen animate-pulse" />
-          <span className="text-muted-foreground font-data">LIVE DATA</span>
+        {/* Status pill & currency toggle */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-rwandaGreen animate-pulse" />
+            <span className="text-muted-foreground font-data">LIVE DATA</span>
+          </div>
+          <div className="border-l border-border" />
+          <button
+            onClick={toggleCurrency}
+            className="px-3 py-1.5 text-xs font-semibold rounded transition-colors bg-secondary hover:bg-secondary/80 text-foreground"
+          >
+            {currency}
+          </button>
         </div>
 
         {/* Mobile menu toggle */}

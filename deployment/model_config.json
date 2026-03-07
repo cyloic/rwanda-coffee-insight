@@ -1,0 +1,21 @@
+{
+  "features": [
+    "Price_USD_per_kg",
+    "Rainfall_mm",
+    "Temperature_C",
+    "Price_7d_ago",
+    "Price_30d_ago"
+  ],
+  "sequence_length": 30,
+  "usd_to_rwf": 1350,
+  "model_performance": {
+    "mape": 1.0798473034402596,
+    "mae": 0.04114146545415468,
+    "rmse": 0.05573680344446626
+  },
+  "input_shape": [
+    30,
+    5
+  ],
+  "trained_date": "2026-03-05"
+}

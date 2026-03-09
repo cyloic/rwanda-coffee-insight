@@ -23,7 +23,7 @@ export default function Index() {
   const [pricesLoading, setPricesLoading] = useState(true);
 
   // Live price history + forecast (falls back to static data locally)
-  const { history, forecast, isLive } = usePriceHistory();
+  const { history, forecast, isLive, priceMultiplier } = usePriceHistory();
 
   const lastPrice = history[history.length - 1].price;
   const { recommendation, direction, peakDay } = computeSignal(forecast, lastPrice);
@@ -40,13 +40,7 @@ export default function Index() {
           if (result.success) setLivePrices(result.data);
         }
       } catch {
-        // Fallback shown only when API is unavailable (local dev)
-        setLivePrices({
-          globalBenchmark: { date: '2026-01-01', usd: 3.64, rwf: 4913, source: 'FRED (Other Mild Arabica)' },
-          rwandaExport: { usd: 6.20, rwf: 8370, source: 'NAEB (Rwanda Official)' },
-          premium: '70.0%',
-          lastUpdated: new Date().toISOString(),
-        });
+        // API unavailable — leave livePrices null, UI shows nothing rather than stale data
       } finally {
         setPricesLoading(false);
       }
@@ -236,7 +230,7 @@ export default function Index() {
               <div className="space-y-1.5 text-sm">
                 {[
                   { label: "Investment Score", value: `${selected.score}/100` },
-                  { label: "Projected ROI", value: `${selected.roi}%` },
+                  { label: "Projected ROI", value: `${Math.round(selected.roi * priceMultiplier)}%` },
                   { label: "Risk Rate", value: `${selected.riskPercent}%` },
                   { label: "Farmers", value: selected.farmerCount.toLocaleString() },
                   { label: "Weather Score", value: `${selected.weatherScore}/100` },

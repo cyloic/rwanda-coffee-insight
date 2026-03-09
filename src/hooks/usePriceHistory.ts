@@ -60,6 +60,9 @@ export function computeSignal(forecast: ForecastPoint[], lastPrice: number): {
   return { recommendation: 'NEUTRAL', direction: 'neutral', thresholdPct, peakDay };
 }
 
+// Baseline RWF price at end of model training data (2023-08-04)
+const BASE_PRICE_RWF = 7845;
+
 export function usePriceHistory() {
   const staticHistory = generatePriceHistory();
   const staticForecast = generateForecast(staticHistory[staticHistory.length - 1].price);
@@ -68,6 +71,8 @@ export function usePriceHistory() {
   const [forecast, setForecast] = useState<ForecastPoint[]>(staticForecast);
   const [isLive, setIsLive] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [volatility, setVolatility] = useState(14);
+  const [bestCaseMultiplier, setBestCaseMultiplier] = useState(1.35);
 
   useEffect(() => {
     fetch('/api/coffee-prices')
@@ -76,14 +81,17 @@ export function usePriceHistory() {
         if (result.success && result.data.priceHistory?.length) {
           setHistory(result.data.priceHistory);
           setForecast(addBands(result.data.priceForecast));
+          if (result.data.priceVolatilityPct) setVolatility(result.data.priceVolatilityPct);
+          if (result.data.bestCaseMultiplier) setBestCaseMultiplier(result.data.bestCaseMultiplier);
           setIsLive(true);
         }
       })
-      .catch(() => {
-        // API unavailable locally — static fallback stays active silently
-      })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  return { history, forecast, isLive, loading };
+  const livePrice = history[history.length - 1]?.price ?? BASE_PRICE_RWF;
+  const priceMultiplier = livePrice / BASE_PRICE_RWF;
+
+  return { history, forecast, isLive, loading, priceMultiplier, volatility, bestCaseMultiplier };
 }

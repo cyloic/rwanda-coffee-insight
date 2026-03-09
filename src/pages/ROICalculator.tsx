@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { REGIONS } from "@/data/sampleData";
+import { usePriceHistory } from "@/hooks/usePriceHistory";
 import { Calculator, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -13,12 +14,15 @@ interface Results {
   breakEvenMonths: number;
 }
 
-function calcResults(amount: number, regionId: string, term: number): Results {
+function calcResults(
+  amount: number, regionId: string, term: number,
+  priceMultiplier: number, bestCaseMult: number
+): Results {
   const region = REGIONS.find((r) => r.id === regionId)!;
-  const baseROI = region.roi / 100;
+  const baseROI = (region.roi * priceMultiplier) / 100;
   const risk = region.riskPercent / 100;
 
-  const best = amount * (1 + baseROI * 1.35) * (term / 12);
+  const best = amount * (1 + baseROI * bestCaseMult) * (term / 12);
   const expected = amount * (1 + baseROI * (term / 12));
   const worst = amount * (1 + (baseROI - risk) * (term / 12));
 
@@ -41,15 +45,17 @@ function TrafficLight({ value, thresholds }: { value: number; thresholds: [numbe
 
 export default function ROICalculator() {
   const { currency, rwfToUsd } = useCurrency();
+  const { priceMultiplier, volatility, bestCaseMultiplier } = usePriceHistory();
   const [amount, setAmount] = useState(202500000); // 150,000 USD * 1350
   const [regionId, setRegionId] = useState("huye");
   const [term, setTerm] = useState(12);
   const [results, setResults] = useState<Results | null>(null);
 
   const region = REGIONS.find((r) => r.id === regionId)!;
+  const adjRoi = (roi: number) => Math.round(roi * priceMultiplier);
 
   const handleCalculate = () => {
-    setResults(calcResults(amount, regionId, term));
+    setResults(calcResults(amount, regionId, term, priceMultiplier, bestCaseMultiplier));
   };
 
   const fmt = (n: number) => formatPrice(currency === "USD" ? rwfToUsd(n) : n, currency);
@@ -99,7 +105,7 @@ export default function ROICalculator() {
             >
               {REGIONS.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.name} — Score {r.score} | ROI {r.roi}%
+                  {r.name} — Score {r.score} | ROI {adjRoi(r.roi)}%
                 </option>
               ))}
             </select>
@@ -189,7 +195,7 @@ export default function ROICalculator() {
                     { label: "Credit Risk", value: region.riskPercent, thresholds: [15, 25] as [number, number], desc: `${region.riskPercent}% historical default rate` },
                     { label: "Weather Risk", value: 100 - region.weatherScore, thresholds: [20, 30] as [number, number], desc: "Based on 5-year climate data" },
                     { label: "Infrastructure Risk", value: 100 - region.infrastructureScore, thresholds: [20, 30] as [number, number], desc: "Road access & processing capacity" },
-                    { label: "Market Risk", value: 14, thresholds: [15, 25] as [number, number], desc: "Price volatility index" },
+                    { label: "Market Risk", value: Math.round(volatility), thresholds: [15, 25] as [number, number], desc: `Annualized price volatility (FRED)` },
                   ].map(({ label, value, thresholds, desc }) => (
                     <div key={label} className="flex items-center gap-3">
                       <TrafficLight value={100 - value} thresholds={[100 - thresholds[1], 100 - thresholds[0]]} />

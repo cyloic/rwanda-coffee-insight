@@ -1,4 +1,5 @@
 import { REGIONS } from "@/data/sampleData";
+import { usePriceHistory } from "@/hooks/usePriceHistory";
 import { ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +11,8 @@ function scoreClass(score: number) {
 
 export default function TopOpportunities() {
   const navigate = useNavigate();
+  const { priceMultiplier } = usePriceHistory();
+  const adjRoi = (roi: number) => Math.round(roi * priceMultiplier);
   const top = [...REGIONS].sort((a, b) => b.score - a.score).slice(0, 5);
 
   return (
@@ -44,7 +47,7 @@ export default function TopOpportunities() {
               <span className="text-sm font-medium text-foreground">{r.name}</span>
             </div>
             <span className={`text-center font-data ${scoreClass(r.score)}`}>{r.score}</span>
-            <span className="text-center font-data text-sm text-rwandaGreen font-semibold">{r.roi}%</span>
+            <span className="text-center font-data text-sm text-rwandaGreen font-semibold">{adjRoi(r.roi)}%</span>
             <span className={`text-center font-data text-sm ${r.riskPercent > 20 ? "text-destructive" : r.riskPercent > 15 ? "text-gold" : "text-rwandaGreen"}`}>
               {r.riskPercent}%
             </span>

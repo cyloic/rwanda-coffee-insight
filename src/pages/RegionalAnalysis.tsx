@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { REGIONS, Region } from "@/data/sampleData";
+import { usePriceHistory } from "@/hooks/usePriceHistory";
 import { ArrowUpDown, ChevronDown, X } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 
@@ -28,6 +29,8 @@ export default function RegionalAnalysis() {
   const [sortAsc, setSortAsc] = useState(false);
   const [selected, setSelected] = useState<Region | null>(null);
   const [filter, setFilter] = useState<"all" | "high" | "mid" | "low">("all");
+  const { priceMultiplier } = usePriceHistory();
+  const adjRoi = (roi: number) => Math.round(roi * priceMultiplier);
 
   const sorted = [...REGIONS]
     .filter((r) => {
@@ -38,6 +41,7 @@ export default function RegionalAnalysis() {
     })
     .sort((a, b) => {
       const dir = sortAsc ? 1 : -1;
+      if (sortKey === 'roi') return (adjRoi(a.roi) - adjRoi(b.roi)) * dir;
       return (a[sortKey] - b[sortKey]) * dir;
     });
 
@@ -115,7 +119,7 @@ export default function RegionalAnalysis() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center"><ScoreBadge score={r.score} /></td>
-                  <td className="px-4 py-3 text-center font-data font-semibold text-rwandaGreen">{r.roi}%</td>
+                  <td className="px-4 py-3 text-center font-data font-semibold text-rwandaGreen">{adjRoi(r.roi)}%</td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex flex-col items-center">
                       <RiskBadge risk={r.riskPercent} />
@@ -183,7 +187,7 @@ export default function RegionalAnalysis() {
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: "Investment Score", value: `${selected.score}/100` },
-                  { label: "Projected ROI", value: `${selected.roi}%` },
+                  { label: "Projected ROI", value: `${adjRoi(selected.roi)}%` },
                   { label: "Default Risk", value: `${selected.riskPercent}%` },
                   { label: "Active Farmers", value: selected.farmerCount.toLocaleString() },
                 ].map((m) => (

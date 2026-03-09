@@ -76,6 +76,26 @@ function trendForecast(history: DailyPoint[], days = 30): ForecastPoint[] {
   });
 }
 
+// Annualized price volatility from monthly log-returns (monthly std dev × √12)
+function annualizedVolatility(monthly: { valueCents: number }[]): number {
+  if (monthly.length < 3) return 14;
+  const prices = monthly.map(d => d.valueCents);
+  const logReturns = prices.slice(1).map((p, i) => Math.log(p / prices[i]));
+  const mean = logReturns.reduce((s, r) => s + r, 0) / logReturns.length;
+  const variance = logReturns.reduce((s, r) => s + (r - mean) ** 2, 0) / logReturns.length;
+  return Math.round(Math.sqrt(variance * 12) * 100 * 10) / 10;
+}
+
+// Best-case ROI multiplier: 1 + coefficient of variation of recent 36 months
+// Captures "how much upside is plausible given this market's own volatility"
+function bestCaseMultiplier(monthly: { valueCents: number }[]): number {
+  const recent = monthly.slice(-36).map(d => d.valueCents);
+  const mean = recent.reduce((s, v) => s + v, 0) / recent.length;
+  const variance = recent.reduce((s, v) => s + (v - mean) ** 2, 0) / recent.length;
+  const cv = Math.sqrt(variance) / mean;
+  return Math.round(Math.max(1.10, Math.min(1.50, 1 + cv)) * 100) / 100;
+}
+
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
     const [fredResponse, fxResponse] = await Promise.all([
@@ -129,6 +149,8 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
         },
         premium: `${premiumPct}%`,
         lastUpdated: new Date().toISOString(),
+        priceVolatilityPct: annualizedVolatility(allMonthly),
+        bestCaseMultiplier: bestCaseMultiplier(allMonthly),
         priceHistory,
         priceForecast,
       },

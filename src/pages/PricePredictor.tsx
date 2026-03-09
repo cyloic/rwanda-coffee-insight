@@ -2,7 +2,7 @@ import PriceChart from "@/components/PriceChart";
 import { Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
-import { usePriceHistory } from "@/hooks/usePriceHistory";
+import { usePriceHistory, computeSignal } from "@/hooks/usePriceHistory";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -13,8 +13,7 @@ export default function PricePredictor() {
   const lastPrice = history[history.length - 1].price;
   const predictedPrice = forecast[forecast.length - 1].price;
   const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
-  const peakDay = forecast.reduce((best, d, i) => d.price > best.price ? { price: d.price, day: i + 1 } : best, { price: 0, day: 0 });
-  const recommendation = Number(priceChange) > 1 ? `WAIT ${peakDay.day} DAYS` : Number(priceChange) < -1 ? "SELL NOW" : "HOLD";
+  const { recommendation, direction, peakDay } = computeSignal(forecast, lastPrice);
 
   const avgConfidence = Math.round(forecast.reduce((sum, d) => sum + (d.confidence ?? 70), 0) / forecast.length);
 
@@ -72,9 +71,9 @@ export default function PricePredictor() {
         <p className="text-sm font-bold text-rwandaGreen">RECOMMENDATION: {recommendation}</p>
           <p className="text-sm text-muted-foreground mt-0.5">
             Model predicts a {Number(priceChange) > 0 ? "+" : ""}{priceChange}% price change over the next 30 days.
-            {Number(priceChange) > 1
-              ? ` Delay disbursement until the peak window (approx. Day ${Math.max(1, peakDay.day - 2)}–${peakDay.day + 2}) to maximize loan-to-value ratio.`
-              : Number(priceChange) < -1
+            {direction === 'up'
+              ? ` Delay disbursement until the peak window (approx. Day ${Math.max(1, peakDay - 2)}–${peakDay + 2}) to maximize loan-to-value ratio.`
+              : direction === 'down'
               ? " Consider accelerating disbursement before further decline."
               : " Market is stable — proceed at your discretion."}
           </p>

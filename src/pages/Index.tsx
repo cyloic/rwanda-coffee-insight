@@ -6,7 +6,7 @@ import { REGIONS, Region, LSTM_7_DAY_PREDICTIONS } from "@/data/sampleData";
 import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useState, useEffect } from "react";
-import { usePriceHistory } from "@/hooks/usePriceHistory";
+import { usePriceHistory, computeSignal } from "@/hooks/usePriceHistory";
 import "leaflet/dist/leaflet.css";
 
 interface CoffeePrices {
@@ -26,10 +26,8 @@ export default function Index() {
   const { history, forecast, isLive } = usePriceHistory();
 
   const lastPrice = history[history.length - 1].price;
-  const predictedPrice = forecast[forecast.length - 1].price;
-  const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
-  const peakDay = forecast.reduce((best, d, i) => d.price > best.price ? { price: d.price, day: i + 1 } : best, { price: 0, day: 0 });
-  const signal = Number(priceChange) > 1 ? `HOLD — Wait ${peakDay.day} days` : Number(priceChange) < -1 ? "SELL NOW" : "NEUTRAL";
+  const { recommendation, direction, peakDay } = computeSignal(forecast, lastPrice);
+  const signal = direction === 'up' ? `HOLD — Wait ${peakDay} days` : recommendation;
 
   // Fetch current benchmark + premium prices (separate concern from history)
   useEffect(() => {
@@ -272,7 +270,7 @@ export default function Index() {
           </div>
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">30-Day Forecast</p>
-            <p className="font-data text-lg font-bold text-rwandaGreen">{formatPrice(currency === "USD" ? rwfToUsd(predictedPrice) : predictedPrice, currency)}/kg</p>
+            <p className="font-data text-lg font-bold text-rwandaGreen">{formatPrice(currency === "USD" ? rwfToUsd(forecast[forecast.length - 1].price) : forecast[forecast.length - 1].price, currency)}/kg</p>
           </div>
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Signal</p>

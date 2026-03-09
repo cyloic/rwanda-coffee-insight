@@ -25,6 +25,41 @@ function addBands(points: { date: string; price: number; confidence: number }[])
   });
 }
 
+// Derive buy/sell signal from model's own confidence intervals — no hardcoded threshold.
+// A signal fires only when the 30-day forecast change exceeds the average CI half-width,
+// meaning the trend is distinguishable from the model's own noise floor.
+export function computeSignal(forecast: ForecastPoint[], lastPrice: number): {
+  recommendation: string;
+  direction: 'up' | 'down' | 'neutral';
+  thresholdPct: number;
+  peakDay: number;
+} {
+  if (!forecast.length || !lastPrice) {
+    return { recommendation: 'NEUTRAL', direction: 'neutral', thresholdPct: 0, peakDay: 0 };
+  }
+
+  const predictedPrice = forecast[forecast.length - 1].price;
+  const priceChangePct = (predictedPrice - lastPrice) / lastPrice * 100;
+
+  // Noise floor = average CI half-width across all 30 forecast days (as % of price)
+  const thresholdPct = forecast.reduce((sum, d) => {
+    return sum + (d.upperBand - d.lowerBand) / 2 / d.price * 100;
+  }, 0) / forecast.length;
+
+  const peakDay = forecast.reduce(
+    (best, d, i) => d.price > best.price ? { price: d.price, day: i + 1 } : best,
+    { price: 0, day: 0 }
+  ).day;
+
+  if (priceChangePct > thresholdPct) {
+    return { recommendation: `WAIT ${peakDay} DAYS`, direction: 'up', thresholdPct, peakDay };
+  }
+  if (priceChangePct < -thresholdPct) {
+    return { recommendation: 'SELL NOW', direction: 'down', thresholdPct, peakDay };
+  }
+  return { recommendation: 'NEUTRAL', direction: 'neutral', thresholdPct, peakDay };
+}
+
 export function usePriceHistory() {
   const staticHistory = generatePriceHistory();
   const staticForecast = generateForecast(staticHistory[staticHistory.length - 1].price);

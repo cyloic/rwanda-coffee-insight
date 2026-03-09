@@ -3,7 +3,7 @@ import RwandaMap from "@/components/RwandaMap";
 import TopOpportunities from "@/components/TopOpportunities";
 import PriceChart from "@/components/PriceChart";
 import { REGIONS, Region, LSTM_7_DAY_PREDICTIONS } from "@/data/sampleData";
-import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useState, useEffect } from "react";
 import { usePriceHistory } from "@/hooks/usePriceHistory";
@@ -17,7 +17,7 @@ interface CoffeePrices {
 }
 
 export default function Index() {
-  const { currency } = useCurrency();
+  const { currency, rwfToUsd } = useCurrency();
   const [selected, setSelected] = useState<Region | null>(null);
   const [livePrices, setLivePrices] = useState<CoffeePrices | null>(null);
   const [pricesLoading, setPricesLoading] = useState(true);

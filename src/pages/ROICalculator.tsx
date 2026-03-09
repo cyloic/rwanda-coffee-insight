@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { REGIONS } from "@/data/sampleData";
 import { Calculator, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
-import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 
 interface Results {
@@ -40,8 +40,8 @@ function TrafficLight({ value, thresholds }: { value: number; thresholds: [numbe
 }
 
 export default function ROICalculator() {
-  const { currency } = useCurrency();
-  const [amount, setAmount] = useState(19200000); // 150,000 USD * 1280
+  const { currency, rwfToUsd } = useCurrency();
+  const [amount, setAmount] = useState(202500000); // 150,000 USD * 1350
   const [regionId, setRegionId] = useState("huye");
   const [term, setTerm] = useState(12);
   const [results, setResults] = useState<Results | null>(null);

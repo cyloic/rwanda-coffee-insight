@@ -22,11 +22,6 @@ function parseFredCsv(csv: string): { date: string; valueCents: number }[] {
     .filter(Boolean) as { date: string; valueCents: number }[];
 }
 
-// Converts FRED cents/lb to RWF/kg (global benchmark — no Rwanda premium applied)
-function toGlobalRWF(valueCents: number): number {
-  const usdPerKg = (valueCents / 100) / LB_TO_KG;
-  return Math.round(usdPerKg * USD_TO_RWF);
-}
 
 function interpolateToDaily(monthly: MonthlyPoint[]): DailyPoint[] {
   const daily: DailyPoint[] = [];
@@ -83,19 +78,27 @@ function trendForecast(history: DailyPoint[], days = 30): ForecastPoint[] {
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
-    const response = await fetch(
-      'https://fred.stlouisfed.org/graph/fredgraph.csv?id=PCOFFOTMUSDM'
-    );
+    const [fredResponse, fxResponse] = await Promise.all([
+      fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=PCOFFOTMUSDM'),
+      fetch('https://open.er-api.com/v6/latest/USD'),
+    ]);
 
-    if (!response.ok) throw new Error(`FRED API failed: ${response.status}`);
+    if (!fredResponse.ok) throw new Error(`FRED API failed: ${fredResponse.status}`);
 
-    const csvText = await response.text();
+    // Live exchange rate — fall back to training rate if unavailable
+    let liveUsdToRwf = USD_TO_RWF;
+    if (fxResponse.ok) {
+      const fxData = await fxResponse.json();
+      if (fxData?.rates?.RWF) liveUsdToRwf = Math.round(fxData.rates.RWF);
+    }
+
+    const csvText = await fredResponse.text();
     const allMonthly = parseFredCsv(csvText);
 
     // Filter from July 2023 onwards — price history shows global benchmark
     const recentMonthly: MonthlyPoint[] = allMonthly
       .filter(d => d.date >= '2023-07-01')
-      .map(d => ({ date: d.date, priceRWF: toGlobalRWF(d.valueCents) }));
+      .map(d => ({ date: d.date, priceRWF: Math.round(((d.valueCents / 100) / LB_TO_KG) * liveUsdToRwf) }));
 
     // Current global benchmark from latest FRED data point
     const latest = allMonthly[allMonthly.length - 1];
@@ -112,15 +115,16 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     res.status(200).json({
       success: true,
       data: {
+        exchangeRate: liveUsdToRwf,
         globalBenchmark: {
           date: latest.date,
           usd: Math.round(globalUsdPerKg * 100) / 100,
-          rwf: Math.round(globalUsdPerKg * USD_TO_RWF),
+          rwf: Math.round(globalUsdPerKg * liveUsdToRwf),
           source: 'FRED (Other Mild Arabica)',
         },
         rwandaExport: {
           usd: rwandaUsdPerKg,
-          rwf: Math.round(rwandaUsdPerKg * USD_TO_RWF),
+          rwf: Math.round(rwandaUsdPerKg * liveUsdToRwf),
           source: 'NAEB 2025 Report',
         },
         premium: `${premiumPct}%`,

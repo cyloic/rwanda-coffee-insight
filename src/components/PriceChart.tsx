@@ -3,7 +3,7 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from "recharts";
 import { generatePriceHistory, generateForecast } from "@/data/sampleData";
-import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import type { PricePoint, ForecastPoint } from "@/hooks/usePriceHistory";
 
@@ -17,7 +17,7 @@ interface PriceChartProps {
   historyDays?: number;
 }
 
-const CustomTooltip = ({ active, payload, label, currency }: any) => {
+const CustomTooltip = ({ active, payload, label, currency, rwfToUsd }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded border border-border bg-card px-3 py-2 text-xs shadow-lg">
@@ -41,7 +41,7 @@ export default function PriceChart({
   forecast: forecastProp,
   historyDays = 90,
 }: PriceChartProps) {
-  const { currency } = useCurrency();
+  const { currency, rwfToUsd } = useCurrency();
 
   // Use live props if provided, otherwise fall back to static data
   const staticHistory = generatePriceHistory();
@@ -92,12 +92,12 @@ export default function PriceChart({
           <YAxis
             domain={["auto", "auto"]}
             tick={{ fill: "hsl(40 10% 55%)", fontSize: 10, fontFamily: "monospace" }}
-            tickFormatter={(v) => currency === "USD" ? `$${rwfToUsd(v).toFixed(2)}` : `${Math.round(v / 1000)}K RWF`}
+            tickFormatter={(v) => currency === "USD" ? `$${rwfToUsd(v).toFixed(2)}` : `${Math.round(v / 1000)}K`}
             axisLine={false}
             tickLine={false}
             width={currency === "USD" ? 55 : 65}
           />
-          <Tooltip content={<CustomTooltip currency={currency} />} />
+          <Tooltip content={<CustomTooltip currency={currency} rwfToUsd={rwfToUsd} />} />
           {showForecast && (
             <ReferenceLine
               x={today}

@@ -1,6 +1,6 @@
 import PriceChart from "@/components/PriceChart";
 import { Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { formatPrice, rwfToUsd } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePriceHistory } from "@/hooks/usePriceHistory";
 import {
@@ -8,7 +8,7 @@ import {
 } from "recharts";
 
 export default function PricePredictor() {
-  const { currency } = useCurrency();
+  const { currency, rwfToUsd } = useCurrency();
   const { history, forecast, isLive } = usePriceHistory();
   const lastPrice = history[history.length - 1].price;
   const predictedPrice = forecast[forecast.length - 1].price;

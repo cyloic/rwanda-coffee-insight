@@ -23,7 +23,7 @@ export default function Index() {
   const [pricesLoading, setPricesLoading] = useState(true);
 
   // Live price history + forecast (falls back to static data locally)
-  const { history, forecast, isLive, priceMultiplier } = usePriceHistory();
+  const { history, forecast, isLive, loading: historyLoading, priceMultiplier } = usePriceHistory();
 
   const lastPrice = history[history.length - 1].price;
   const { recommendation, direction, peakDay } = computeSignal(forecast, lastPrice);
@@ -231,27 +231,45 @@ export default function Index() {
 
       {/* Price forecast chart */}
       <div className="rounded-lg border border-border bg-card p-4">
-        <PriceChart
-          title={`Coffee Price: Historical + 30-Day Forecast (${currency}/kg)${isLive ? " · Live" : ""}`}
-          showForecast={true}
-          height={240}
-          history={history}
-          forecast={forecast}
-        />
-        <div className="mt-3 flex flex-wrap gap-6 border-t border-border pt-3">
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Current Price</p>
-            <p className="font-data text-lg font-bold text-gold">{formatPrice(currency === "USD" ? rwfToUsd(lastPrice) : lastPrice, currency)}/kg</p>
+        {historyLoading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 bg-muted rounded w-48" />
+            <div className="h-[240px] bg-muted rounded" />
+            <div className="flex gap-6 pt-3 border-t border-border">
+              <div className="h-5 bg-muted rounded w-24" />
+              <div className="h-5 bg-muted rounded w-24" />
+              <div className="h-5 bg-muted rounded w-20" />
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">30-Day Forecast</p>
-            <p className="font-data text-lg font-bold text-rwandaGreen">{formatPrice(currency === "USD" ? rwfToUsd(forecast[forecast.length - 1].price) : forecast[forecast.length - 1].price, currency)}/kg</p>
+        ) : isLive ? (
+          <>
+            <PriceChart
+              title={`Coffee Price: Historical + 30-Day Forecast (${currency}/kg) · Live`}
+              showForecast={true}
+              height={240}
+              history={history}
+              forecast={forecast}
+            />
+            <div className="mt-3 flex flex-wrap gap-6 border-t border-border pt-3">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Current Price</p>
+                <p className="font-data text-lg font-bold text-gold">{formatPrice(currency === "USD" ? rwfToUsd(lastPrice) : lastPrice, currency)}/kg</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">30-Day Forecast</p>
+                <p className="font-data text-lg font-bold text-rwandaGreen">{formatPrice(currency === "USD" ? rwfToUsd(forecast[forecast.length - 1].price) : forecast[forecast.length - 1].price, currency)}/kg</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Signal</p>
+                <p className="font-data text-lg font-bold text-foreground">{signal}</p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-[240px] text-sm text-muted-foreground">
+            Live price data unavailable — check back shortly.
           </div>
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Signal</p>
-            <p className="font-data text-lg font-bold text-foreground">{signal}</p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

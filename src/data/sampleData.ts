@@ -27,8 +27,8 @@ export const REGIONS: Region[] = [
   {
     id: "huye",
     name: "Huye",
-    score: 75,
-    roi: 38,
+    score: 78,
+    roi: 18,
     riskPercent: 15,
     farmerCount: 450,
     lat: -2.6,
@@ -45,8 +45,8 @@ export const REGIONS: Region[] = [
   {
     id: "nyamasheke",
     name: "Nyamasheke",
-    score: 71,
-    roi: 34,
+    score: 73,
+    roi: 15,
     riskPercent: 18,
     farmerCount: 380,
     lat: -2.33,
@@ -63,8 +63,8 @@ export const REGIONS: Region[] = [
   {
     id: "rusizi",
     name: "Rusizi",
-    score: 55,
-    roi: 22,
+    score: 57,
+    roi: 11,
     riskPercent: 35,
     farmerCount: 320,
     lat: -2.48,
@@ -81,8 +81,8 @@ export const REGIONS: Region[] = [
   {
     id: "karongi",
     name: "Karongi",
-    score: 50,
-    roi: 18,
+    score: 52,
+    roi: 9,
     riskPercent: 42,
     farmerCount: 290,
     lat: -2.00,
@@ -99,8 +99,8 @@ export const REGIONS: Region[] = [
   {
     id: "nyaruguru",
     name: "Nyaruguru",
-    score: 46,
-    roi: 15,
+    score: 49,
+    roi: 7,
     riskPercent: 48,
     farmerCount: 250,
     lat: -2.90,
@@ -159,5 +159,4 @@ export const STATS = [
   { label: "Avg. Portfolio Returns", value: "489%", sub: "over 5-year horizon", trend: "+12% YoY" },
   { label: "Registered Farmers", value: "211K", sub: "across 5 regions", trend: "+8.3K this year" },
   { label: "Historical Default Rate", value: "14.8%", sub: "sector benchmark", trend: "-2.1% vs 2023" },
-  { label: "Capital Deployed", value: "6.7B RWF", sub: "active loans", trend: "+1.4B Q4" },
 ];

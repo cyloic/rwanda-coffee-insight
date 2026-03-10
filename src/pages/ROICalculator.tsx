@@ -11,7 +11,7 @@ interface Results {
   worstCase: number;
   annualizedROI: number;
   totalReturn: number;
-  breakEvenMonths: number;
+  breakEvenMonths: number | null;
 }
 
 function calcResults(
@@ -22,17 +22,22 @@ function calcResults(
   const baseROI = (region.roi * priceMultiplier) / 100;
   const risk = region.riskPercent / 100;
 
-  const best = amount * (1 + baseROI * bestCaseMult) * (term / 12);
-  const expected = amount * (1 + baseROI * (term / 12));
-  const worst = amount * (1 + (baseROI - risk) * (term / 12));
+  // Risk materializes at 10% (best), 50% (expected), 100% (worst)
+  const bestNetROI  = baseROI * bestCaseMult - risk * 0.1;
+  const expNetROI   = baseROI - risk * 0.5;
+  const worstNetROI = baseROI - risk;
+
+  const best     = amount * (1 + bestNetROI  * (term / 12));
+  const expected = amount * (1 + expNetROI   * (term / 12));
+  const worst    = amount * (1 + worstNetROI * (term / 12));
 
   return {
     bestCase: Math.round(best),
     expected: Math.round(expected),
     worstCase: Math.round(worst),
-    annualizedROI: Math.round(baseROI * 100 * (12 / term) * 10) / 10,
+    annualizedROI: Math.round(expNetROI * 100 * (12 / term) * 10) / 10,
     totalReturn: Math.round((expected - amount) / amount * 100 * 10) / 10,
-    breakEvenMonths: Math.round(12 / baseROI),
+    breakEvenMonths: expNetROI > 0 ? Math.round(12 / expNetROI) : null,
   };
 }
 
@@ -177,7 +182,7 @@ export default function ROICalculator() {
                   {[
                     { label: "Total Return", value: `${results.totalReturn}%` },
                     { label: "Annualized ROI", value: `${results.annualizedROI}%` },
-                    { label: "Break-even", value: `${results.breakEvenMonths}mo` },
+                    { label: "Break-even", value: results.breakEvenMonths !== null ? `${results.breakEvenMonths}mo` : "N/A" },
                   ].map((m) => (
                     <div key={m.label}>
                       <p className="text-xs text-muted-foreground">{m.label}</p>

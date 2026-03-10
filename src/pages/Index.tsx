@@ -2,7 +2,7 @@ import StatCards from "@/components/StatCards";
 import RwandaMap from "@/components/RwandaMap";
 import TopOpportunities from "@/components/TopOpportunities";
 import PriceChart from "@/components/PriceChart";
-import { REGIONS, Region, LSTM_7_DAY_PREDICTIONS } from "@/data/sampleData";
+import { REGIONS, Region } from "@/data/sampleData";
 import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useState, useEffect } from "react";
@@ -155,51 +155,50 @@ export default function Index() {
         </div>
       )}
 
-      {/* LSTM Predictions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="stat-card">
-          <p className="section-heading mb-2">LSTM Prediction (Next Day)</p>
-          <p className="font-data text-3xl font-bold text-rwandaGreen tracking-tight">
-            {currency === "USD" 
-              ? `$${LSTM_7_DAY_PREDICTIONS[0].priceUSD}`
-              : `${LSTM_7_DAY_PREDICTIONS[0].priceRWF.toLocaleString()} RWF`
-            }/kg
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {currency === "USD" 
-              ? `${LSTM_7_DAY_PREDICTIONS[0].priceRWF.toLocaleString()} RWF`
-              : `$${LSTM_7_DAY_PREDICTIONS[0].priceUSD} USD`
-            }
-          </p>
-          <div className="mt-3 flex items-center gap-1.5">
-            <span className="text-xs font-data text-green-600">
-              Confidence: {LSTM_7_DAY_PREDICTIONS[0].confidence}%
-            </span>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <p className="section-heading mb-2">7-Day LSTM Forecast</p>
-          <p className="font-data text-3xl font-bold text-foreground tracking-tight">
-            {currency === "USD" 
-              ? `$${LSTM_7_DAY_PREDICTIONS[6].priceUSD}`
-              : `${LSTM_7_DAY_PREDICTIONS[6].priceRWF.toLocaleString()} RWF`
-            }/kg
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Day 7 prediction
-          </p>
-          <div className="mt-3">
-            <span className="text-xs text-muted-foreground">
-              Trend: 
-              {LSTM_7_DAY_PREDICTIONS[6].priceRWF > LSTM_7_DAY_PREDICTIONS[0].priceRWF 
-                ? " Increasing" 
-                : " Declining"
+      {/* LSTM Predictions — only render once live API data has loaded */}
+      {isLive && forecast.length >= 7 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="stat-card">
+            <p className="section-heading mb-2">LSTM Prediction (Next Day)</p>
+            <p className="font-data text-3xl font-bold text-rwandaGreen tracking-tight">
+              {currency === "USD"
+                ? `$${rwfToUsd(forecast[0].price).toFixed(2)}`
+                : `${forecast[0].price.toLocaleString()} RWF`
+              }/kg
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {currency === "USD"
+                ? `${forecast[0].price.toLocaleString()} RWF`
+                : `$${rwfToUsd(forecast[0].price).toFixed(2)} USD`
               }
-            </span>
+            </p>
+            <div className="mt-3 flex items-center gap-1.5">
+              <span className="text-xs font-data text-green-600">
+                Confidence: {forecast[0].confidence}%
+              </span>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <p className="section-heading mb-2">7-Day LSTM Forecast</p>
+            <p className="font-data text-3xl font-bold text-foreground tracking-tight">
+              {currency === "USD"
+                ? `$${rwfToUsd(forecast[6].price).toFixed(2)}`
+                : `${forecast[6].price.toLocaleString()} RWF`
+              }/kg
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Day 7 prediction
+            </p>
+            <div className="mt-3">
+              <span className="text-xs text-muted-foreground">
+                Trend:
+                {forecast[6].price > forecast[0].price ? " Increasing" : " Declining"}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Stats */}
       <StatCards />

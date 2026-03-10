@@ -83,16 +83,10 @@ export default function Index() {
             ) : (
               <>
                 <p className="font-data text-3xl font-bold text-foreground tracking-tight">
-                  {currency === "USD" 
+                  {currency === "USD"
                     ? `$${livePrices.globalBenchmark.usd.toFixed(2)}`
                     : `${livePrices.globalBenchmark.rwf.toLocaleString()} RWF`
                   }/kg
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {currency === "USD" 
-                    ? `${livePrices.globalBenchmark.rwf.toLocaleString()} RWF`
-                    : `$${livePrices.globalBenchmark.usd.toFixed(2)} USD`
-                  }
                 </p>
                 <p className="text-[10px] text-muted-foreground mt-2">{livePrices.globalBenchmark.source}</p>
               </>
@@ -110,16 +104,10 @@ export default function Index() {
             ) : (
               <>
                 <p className="font-data text-3xl font-bold text-gold tracking-tight">
-                  {currency === "USD" 
+                  {currency === "USD"
                     ? `$${livePrices.rwandaExport.usd.toFixed(2)}`
                     : `${livePrices.rwandaExport.rwf.toLocaleString()} RWF`
                   }/kg
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {currency === "USD" 
-                    ? `${livePrices.rwandaExport.rwf.toLocaleString()} RWF`
-                    : `$${livePrices.rwandaExport.usd.toFixed(2)} USD`
-                  }
                 </p>
                 <p className="text-[10px] text-muted-foreground mt-2">{livePrices.rwandaExport.source}</p>
               </>
@@ -165,12 +153,6 @@ export default function Index() {
                 ? `$${rwfToUsd(forecast[0].price).toFixed(2)}`
                 : `${forecast[0].price.toLocaleString()} RWF`
               }/kg
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {currency === "USD"
-                ? `${forecast[0].price.toLocaleString()} RWF`
-                : `$${rwfToUsd(forecast[0].price).toFixed(2)} USD`
-              }
             </p>
             <div className="mt-3 flex items-center gap-1.5">
               <span className="text-xs font-data text-green-600">

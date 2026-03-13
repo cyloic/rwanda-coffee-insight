@@ -29,7 +29,7 @@ const SUGGESTIONS = [
 export default function CoffeeChat({ context }: Props) {
   const [messages, setMessages]   = useState<Message[]>([]);
   const [input, setInput]         = useState('');
-  const [streaming, setStreaming] = useState(false);
+  const [loading, setLoading]     = useState(false);
   const bottomRef                 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,16 +37,13 @@ export default function CoffeeChat({ context }: Props) {
   }, [messages]);
 
   async function send(text: string) {
-    if (!text.trim() || streaming) return;
+    if (!text.trim() || loading) return;
 
     const userMsg: Message = { role: 'user', content: text.trim() };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput('');
-    setStreaming(true);
-
-    const assistantMsg: Message = { role: 'assistant', content: '' };
-    setMessages([...next, assistantMsg]);
+    setLoading(true);
 
     try {
       const res = await fetch('/api/chat', {
@@ -55,51 +52,15 @@ export default function CoffeeChat({ context }: Props) {
         body: JSON.stringify({ messages: next, context }),
       });
 
-      if (!res.ok || !res.body) throw new Error('Request failed');
+      const data = await res.json();
 
-      const reader  = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer    = '';
+      if (!res.ok || data.error) throw new Error(data.error ?? 'Request failed');
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const payload = line.slice(6).trim();
-          if (payload === '[DONE]') break;
-          try {
-            const { text, error } = JSON.parse(payload);
-            if (error) throw new Error(error);
-            if (text) {
-              setMessages(prev => {
-                const updated = [...prev];
-                updated[updated.length - 1] = {
-                  ...updated[updated.length - 1],
-                  content: updated[updated.length - 1].content + text,
-                };
-                return updated;
-              });
-            }
-          } catch { /* skip malformed chunk */ }
-        }
-      }
+      setMessages([...next, { role: 'assistant', content: data.text }]);
     } catch {
-      setMessages(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-          ...updated[updated.length - 1],
-          content: 'Sorry, something went wrong. Please try again.',
-        };
-        return updated;
-      });
+      setMessages([...next, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
     } finally {
-      setStreaming(false);
+      setLoading(false);
     }
   }
 
@@ -126,29 +87,28 @@ export default function CoffeeChat({ context }: Props) {
           </div>
         ) : (
           messages.map((m, i) => (
-            <div
-              key={i}
-              className={`text-sm leading-relaxed ${
-                m.role === 'user'
-                  ? 'text-foreground font-medium'
-                  : 'text-muted-foreground'
-              }`}
-            >
-              {m.role === 'user' && (
-                <span className="text-[10px] uppercase tracking-widest text-rwandaGreen mr-1">You</span>
-              )}
-              {m.role === 'assistant' && (
-                <span className="text-[10px] uppercase tracking-widest text-gold mr-1">Advisor</span>
-              )}
-              <span className={streaming && i === messages.length - 1 && m.role === 'assistant' && m.content === '' ? 'inline-block w-1.5 h-3 bg-muted-foreground animate-pulse' : ''}>
+            <div key={i} className="text-sm leading-relaxed">
+              <span className={`text-[10px] uppercase tracking-widest mr-1 ${m.role === 'user' ? 'text-rwandaGreen' : 'text-gold'}`}>
+                {m.role === 'user' ? 'You' : 'Advisor'}
+              </span>
+              <span className={m.role === 'user' ? 'text-foreground font-medium' : 'text-muted-foreground'}>
                 {m.content}
-                {streaming && i === messages.length - 1 && m.role === 'assistant' && m.content && (
-                  <span className="inline-block w-1.5 h-3 ml-0.5 bg-muted-foreground animate-pulse align-middle" />
-                )}
               </span>
             </div>
           ))
         )}
+
+        {loading && (
+          <div className="text-sm text-muted-foreground">
+            <span className="text-[10px] uppercase tracking-widest text-gold mr-1">Advisor</span>
+            <span className="inline-flex gap-1">
+              <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
+            </span>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
@@ -161,11 +121,11 @@ export default function CoffeeChat({ context }: Props) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send(input)}
-            disabled={streaming}
+            disabled={loading}
           />
           <button
             onClick={() => send(input)}
-            disabled={streaming || !input.trim()}
+            disabled={loading || !input.trim()}
             className="p-2 rounded bg-rwandaGreen text-white disabled:opacity-40 hover:opacity-90 transition-opacity"
           >
             <Send className="h-4 w-4" />

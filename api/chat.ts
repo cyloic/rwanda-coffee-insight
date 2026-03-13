@@ -33,12 +33,8 @@ Your role:
 
 Style: concise and data-driven. Under 120 words unless a detailed breakdown is requested.`;
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
   try {
-    const stream = client.messages.stream({
+    const response = await client.messages.create({
       model: 'claude-opus-4-6',
       max_tokens: 512,
       system: systemPrompt,
@@ -48,15 +44,14 @@ Style: concise and data-driven. Under 120 words unless a detailed breakdown is r
       })),
     });
 
-    stream.on('text', (text) => {
-      res.write(`data: ${JSON.stringify({ text })}\n\n`);
-    });
+    const text = response.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('');
 
-    await stream.finalMessage();
-    res.write('data: [DONE]\n\n');
-    res.end();
-  } catch {
-    res.write(`data: ${JSON.stringify({ error: 'Failed to get response' })}\n\n`);
-    res.end();
+    return res.status(200).json({ text });
+  } catch (err) {
+    console.error('Claude API error:', err);
+    return res.status(500).json({ error: 'Failed to get response' });
   }
 }

@@ -50,8 +50,9 @@ Style: concise and data-driven. Under 120 words unless a detailed breakdown is r
       .join('');
 
     return res.status(200).json({ text });
-  } catch (err) {
-    console.error('Claude API error:', err);
-    return res.status(500).json({ error: 'Failed to get response' });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Claude API error:', msg);
+    return res.status(500).json({ error: msg });
   }
 }

@@ -4,7 +4,7 @@ A comprehensive platform for exploring Rwanda's coffee market insights, pricing 
 
 ## 🎥 Video Demo
 
-[Watch App Demo on Google Drive](https://drive.google.com/file/d/1ndsd2jQ5vSCpl_OijlOeY2ozMqLyhQJc/view?usp=sharing)
+[Watch App Demo on Google Drive](https://drive.google.com/file/d/1kgtAejUj_1dp_AWkauU1SzirWb8q1KXv/view?usp=sharing)
 
 ## GitHub Repository
 

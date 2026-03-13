@@ -1,5 +1,6 @@
 import PriceChart from "@/components/PriceChart";
-import { Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import CoffeeChat from "@/components/CoffeeChat";
+import { Clock } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePriceHistory, computeSignal } from "@/hooks/usePriceHistory";
@@ -157,24 +158,19 @@ export default function PricePredictor() {
         </ResponsiveContainer>
       </div>
 
-      {/* Risk factors */}
-      <div className="rounded-lg border border-border bg-card p-4">
-        <p className="section-heading mb-4">Forecast Risk Factors</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          {[
-            { icon: CheckCircle2, color: "text-rwandaGreen", bg: "bg-rwandaGreen/10", title: "Seasonal Pattern", desc: "Strong harvest season correlation. Q1 typically shows price strength." },
-            { icon: AlertTriangle, color: "text-gold", bg: "bg-gold/10", title: "Currency Volatility", desc: "RWF/USD fluctuation may impact local payout rates by ±3%." },
-            { icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10", title: "Climate Risk", desc: "La Niña pattern increases rainfall variability in Nov–Dec window." },
-          ].map(({ icon: Icon, color, bg, title, desc }) => (
-            <div key={title} className={`rounded-lg p-3 ${bg} flex gap-3`}>
-              <Icon className={`h-4 w-4 ${color} flex-shrink-0 mt-0.5`} />
-              <div>
-                <p className={`font-semibold ${color} text-xs mb-1`}>{title}</p>
-                <p className="text-muted-foreground text-xs leading-relaxed">{desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* AI Advisor */}
+      <div className="rounded-lg border border-border bg-card p-4 flex flex-col" style={{ minHeight: 340 }}>
+        <p className="section-heading mb-3">AI Market Advisor</p>
+        <CoffeeChat
+          context={{
+            currentPriceRwf: lastPrice,
+            currentPriceUsd: Number(rwfToUsd(lastPrice).toFixed(2)),
+            forecastDirection: direction,
+            signal: recommendation,
+            forecastSource,
+            volatilityPct: undefined,
+          }}
+        />
       </div>
     </div>
   );

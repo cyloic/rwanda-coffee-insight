@@ -139,6 +139,99 @@ Notebook/
 └── Rwanda_Coffee_ML.ipynb  # Machine learning models for price prediction
 ```
 
+## Testing Results
+
+This section documents the current verified testing evidence for the app, the trained LSTM model, and the main runtime paths used in production.
+
+### 1. Model Performance Testing
+
+Model configuration and evaluation metrics are stored in `deployment/model_config.json`.
+
+| Metric | Result |
+| --- | --- |
+| Model type | LSTM (30-step sequence, 5 input features) |
+| MAPE | 1.08% |
+| MAE | 0.0411 USD/kg |
+| RMSE | 0.0557 USD/kg |
+| Trained date | 2026-03-05 |
+
+**Feature set used by the model**
+
+- Price_USD_per_kg
+- Rainfall_mm
+- Temperature_C
+- Price_7d_ago
+- Price_30d_ago
+
+**Training and validation artifacts**
+
+- The end-to-end training workflow is documented in `Notebook/Rwanda_Coffee_ML.ipynb`.
+- Training and validation loss inspection is part of the notebook workflow used to export the production model.
+- The production app serves the trained weights from `public/lstmModel/weights.json` and runs inference client-side in TypeScript.
+
+**Model comparison in production**
+
+| Forecast path | Purpose in app | Current status |
+| --- | --- | --- |
+| LSTM forecast | Primary ML prediction path after weights load | Production path |
+| Trend forecast | Fast fallback shown immediately while LSTM loads or if weights are unavailable | Production fallback |
+
+### 2. Different Data Values Testing
+
+**Regional output comparison**
+
+The app was checked against materially different regional profiles to confirm that scores, ROI, and risk outputs change as expected.
+
+| Region | Score | ROI | Risk | Interpretation |
+| --- | --- | --- | --- | --- |
+| Huye | 78/100 | 18% | 15% | Highest-ranked option with strong infrastructure and yield profile |
+| Karongi | 52/100 | 9% | 42% | Lower-return, higher-risk profile flagged as a long-term development case |
+
+**Currency conversion examples**
+
+The UI supports both RWF and USD display. For example, using the model training conversion rate of 1350 RWF/USD:
+
+| RWF value | USD equivalent |
+| --- | --- |
+| 5,400 RWF/kg | 4.00 USD/kg |
+| 7,425 RWF/kg | 5.50 USD/kg |
+
+Note: the live app uses the FX rate returned by the serverless API when available; the 1350 rate above is included as a reproducible benchmark example from the model configuration.
+
+**Edge-case and failure-path checks**
+
+| Scenario | Expected behavior | Current handling |
+| --- | --- | --- |
+| Coffee price API unavailable | App should avoid showing stale live data | Dashboard hides live-price cards and shows an unavailable state instead of stale values |
+| LSTM weights unavailable | Forecast view should still work | Hook keeps the trend forecast instead of crashing the UI |
+| ROI input extremes | User inputs should stay within supported operating ranges | ROI amount slider is constrained to 64M-384M RWF and loan term options are fixed to 6, 12, 18, or 24 months |
+
+### 3. Different Hardware / Software Testing
+
+**Current verified software checks**
+
+| Check | Result |
+| --- | --- |
+| Unit test suite | Passed: 1 test file, 1 test, 0 failures |
+| Test runtime | 3.04s using Vitest |
+| Production build | Passed with Vite |
+| Build runtime | 11.77s |
+| Build note | Bundle succeeds, but the main JS chunk is above 500 kB and should be optimized further |
+
+**Verified build environment**
+
+| Environment area | Result |
+| --- | --- |
+| Local development OS | Windows |
+| Frontend toolchain | React + TypeScript + Vite |
+| Deployment target | Vercel |
+| Responsive UI implementation | Desktop and mobile breakpoints are implemented across dashboard, charts, regional analysis, and ROI pages |
+
+**Browser and device coverage note**
+
+- The current repository includes verified automated test, build, and deployment-path validation.
+- A formal Lighthouse run and manual browser matrix for Chrome, Firefox, Safari, and Edge should be added as final QA evidence before grading if the rubric requires separate performance screenshots.
+
 ## Deployment Plan
 
 ### Pre-Deployment Checklist

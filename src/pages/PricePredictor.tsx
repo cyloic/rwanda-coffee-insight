@@ -9,7 +9,7 @@ import {
 
 export default function PricePredictor() {
   const { currency, rwfToUsd } = useCurrency();
-  const { history, forecast, isLive } = usePriceHistory();
+  const { history, forecast, isLive, forecastSource } = usePriceHistory();
   const lastPrice = history[history.length - 1].price;
   const predictedPrice = forecast[forecast.length - 1].price;
   const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
@@ -44,7 +44,9 @@ export default function PricePredictor() {
         <p className="section-heading mb-1">Market Intelligence</p>
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">Price Predictor</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          ML-powered 30-day price forecast with confidence intervals
+          {forecastSource === "lstm"
+            ? "LSTM-powered 30-day price forecast with confidence intervals"
+            : "Trend-based 30-day price forecast with confidence intervals"}
         </p>
       </div>
 
@@ -94,8 +96,13 @@ export default function PricePredictor() {
       {/* Forecast chart */}
       <div className="rounded-lg border border-border bg-card p-4">
         <div className="flex items-center justify-between mb-3">
-          <p className="section-heading">30-Day Price Forecast with Confidence Interval</p>
+          <p className="section-heading">
+            30-Day {forecastSource === "lstm" ? "LSTM" : "Trend"} Forecast with Confidence Interval
+          </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <span className="rounded border border-border px-2 py-0.5 font-data text-[10px] uppercase tracking-wider">
+              Source: {forecastSource === "lstm" ? "LSTM" : "Trend"}
+            </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-5 rounded-sm bg-rwandaGreen/20 border border-rwandaGreen/40" />
               95% CI Band

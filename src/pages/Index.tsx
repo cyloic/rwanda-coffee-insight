@@ -1,4 +1,3 @@
-import StatCards from "@/components/StatCards";
 import RwandaMap from "@/components/RwandaMap";
 import TopOpportunities from "@/components/TopOpportunities";
 import PriceChart from "@/components/PriceChart";
@@ -181,9 +180,6 @@ export default function Index() {
           </div>
         </div>
       )}
-
-      {/* Stats */}
-      <StatCards />
 
       {/* Map + sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

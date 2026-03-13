@@ -2,8 +2,10 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const USD_TO_RWF = 1350;
 const LB_TO_KG = 0.453592;
-// Official NAEB (Rwanda) average export price for green coffee — updated from 2025 report
-const RWANDA_EXPORT_USD_PER_KG = 6.20;
+// Rwanda specialty arabica historically trades at ~8% premium over FRED Other Mild Arabica.
+// Derived from NAEB 2024 export data ($6.20/kg) vs FRED benchmark at that time (~$5.75/kg).
+// Applied live so the premium stays valid as global prices move.
+const RWANDA_PREMIUM_RATIO = 1.08;
 
 interface MonthlyPoint { date: string; priceRWF: number; }
 interface DailyPoint { date: string; price: number; }
@@ -124,9 +126,9 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     const latest = allMonthly[allMonthly.length - 1];
     const globalUsdPerKg = (latest.valueCents / 100) / LB_TO_KG;
 
-    // Rwanda export price from NAEB official figure (not derived from FRED)
-    const rwandaUsdPerKg = RWANDA_EXPORT_USD_PER_KG;
-    const premiumPct = ((rwandaUsdPerKg / globalUsdPerKg - 1) * 100).toFixed(1);
+    // Rwanda export price: live benchmark × historical premium ratio
+    const rwandaUsdPerKg = globalUsdPerKg * RWANDA_PREMIUM_RATIO;
+    const premiumPct = ((RWANDA_PREMIUM_RATIO - 1) * 100).toFixed(1);
 
     // Build daily global benchmark history and 30-day trend forecast
     const priceHistory = interpolateToDaily(recentMonthly);
@@ -145,7 +147,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
         rwandaExport: {
           usd: rwandaUsdPerKg,
           rwf: Math.round(rwandaUsdPerKg * liveUsdToRwf),
-          source: 'NAEB 2025 Report',
+          source: 'NAEB basis · live benchmark adjusted',
         },
         premium: `${premiumPct}%`,
         lastUpdated: new Date().toISOString(),

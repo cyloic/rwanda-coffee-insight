@@ -110,6 +110,14 @@ export function useLSTMPriceHistory() {
         if (!weights || !liveHistory.length) return;
         const prices   = liveHistory.map(p => p.price);
         const lastDate = liveHistory[liveHistory.length - 1].date;
+
+        // OOD guard: LSTM was trained on prices up to $5.70/kg.
+        // If current prices are above that ceiling, skip LSTM — it will
+        // extrapolate back toward its training range and produce a fake crash.
+        const LSTM_TRAINING_MAX_USD = 5.696;
+        const recentAvgUsd = prices.slice(-5).reduce((s, p) => s + p / liveRate, 0) / 5;
+        if (recentAvgUsd > LSTM_TRAINING_MAX_USD) return; // stay on trend forecast
+
         const raw      = generateLSTMForecast(prices, liveRate, weights, lastDate);
         const bands: ForecastPoint[] = raw.map(d => {
           const bandPct = (100 - d.confidence) / 100 * 0.15;

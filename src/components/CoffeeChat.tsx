@@ -19,6 +19,58 @@ interface Props {
   context: MarketContext;
 }
 
+const REGIONS = [
+  { name: 'Huye', score: 78, roi: 18, risk: 15, desc: 'Top-ranked. High yields and excellent infrastructure near Butare.' },
+  { name: 'Nyamasheke', score: 73, roi: 15, risk: 18, desc: 'Lake Kivu microclimate produces exceptional washed arabica.' },
+  { name: 'Rusizi', score: 57, roi: 11, risk: 35, desc: 'Yield challenges. Requires infrastructure investment before scaling.' },
+  { name: 'Karongi', score: 52, roi: 9, risk: 42, desc: 'Significant yield deficit. Long-term development opportunity.' },
+  { name: 'Nyaruguru', score: 49, roi: 7, risk: 48, desc: 'Lowest ranking. Critical yield issues and weak infrastructure.' },
+];
+
+function generateResponse(input: string, ctx: MarketContext): string {
+  const q = input.toLowerCase();
+  const priceRwf = ctx.currentPriceRwf.toLocaleString();
+  const priceUsd = ctx.currentPriceUsd.toFixed(2);
+  const dir = ctx.forecastDirection;
+  const signal = ctx.signal;
+
+  // Sell / timing questions
+  if (q.match(/sell|when|timing|hold|wait|disburs/)) {
+    if (signal === 'NEUTRAL') {
+      return `Current price is ${priceRwf} RWF ($${priceUsd}/kg) with a neutral 30-day outlook. The forecast trend is flat — no strong signal to accelerate or delay. Proceed at your discretion based on your cash flow needs.`;
+    }
+    if (dir === 'up') {
+      return `Forecast shows upward pressure from ${priceRwf} RWF. The model suggests holding — prices are expected to rise over the next 30 days. If your signal reads "WAIT X DAYS", that's the estimated peak window. Delay disbursement if operationally feasible.`;
+    }
+    return `Price is at ${priceRwf} RWF ($${priceUsd}/kg) with a declining 30-day trend. The model recommends selling now to avoid further erosion. Consider accelerating disbursement before the forecasted drop materialises.`;
+  }
+
+  // Region / ROI questions
+  if (q.match(/region|roi|return|best|invest|huye|nyamasheke|rusizi|karongi|nyaruguru/)) {
+    const top = REGIONS[0];
+    const second = REGIONS[1];
+    return `Best ROI: ${top.name} (${top.roi}%, score ${top.score}/100, risk ${top.risk}%). ${top.desc} Runner-up: ${second.name} at ${second.roi}% ROI with ${second.desc} Avoid Nyaruguru and Karongi for near-term returns — high risk, low yield scores.`;
+  }
+
+  // Price / market questions
+  if (q.match(/price|market|benchmark|global|trend|forecast/)) {
+    return `Global benchmark (FRED Other Mild Arabica) is currently $${priceUsd}/kg (${priceRwf} RWF). Rwanda specialty arabica trades at ~8% above this benchmark. The 30-day trend forecast is ${dir === 'up' ? 'upward' : dir === 'down' ? 'downward' : 'flat'}. Data source: FRED monthly data, interpolated to daily.`;
+  }
+
+  // Reliability / model questions
+  if (q.match(/reliab|accura|confiden|trust|model|lstm|forecast|how good/)) {
+    return `The forecast uses linear trend regression on FRED monthly data (interpolated to daily). It's useful for directional signals over 30 days but not precise to the RWF. LSTM inference is currently bypassed because global prices ($${priceUsd}/kg) exceed the model's training ceiling ($5.70/kg). Treat forecasts as directional guidance, not exact predictions.`;
+  }
+
+  // Risk questions
+  if (q.match(/risk|volatil|danger|concern|climate|weather/)) {
+    return `Key risks: (1) Currency — RWF/USD fluctuations directly affect local payouts. (2) Supply — Rwanda's arabica is weather-sensitive; El Niño/La Niña patterns affect Q4 yields. (3) Global demand — specialty coffee premiums compress during recessions. Current annualised volatility is elevated given global price surge since 2024.`;
+  }
+
+  // Generic fallback
+  return `Current market: ${priceRwf} RWF/kg ($${priceUsd}) | Trend: ${dir} | Signal: ${signal}. Ask me about selling timing, regional ROI, price drivers, or forecast reliability.`;
+}
+
 const SUGGESTIONS = [
   'Is now a good time to sell?',
   'Which region has the best ROI?',
@@ -36,50 +88,29 @@ export default function CoffeeChat({ context }: Props) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  async function send(text: string) {
+  function send(text: string) {
     if (!text.trim() || loading) return;
-
     const userMsg: Message = { role: 'user', content: text.trim() };
-    const next = [...messages, userMsg];
-    setMessages(next);
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next, context }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || data.error) throw new Error(data.error ?? 'Request failed');
-
-      setMessages([...next, { role: 'assistant', content: data.text }]);
-    } catch {
-      setMessages([...next, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
-    } finally {
+    setTimeout(() => {
+      const reply = generateResponse(text, context);
+      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
       setLoading(false);
-    }
+    }, 600);
   }
 
   return (
     <div className="flex flex-col h-full">
-      {/* Message area */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1 min-h-0">
         {messages.length === 0 ? (
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              Ask anything about Rwanda coffee prices, regions, or timing.
-            </p>
+            <p className="text-xs text-muted-foreground">Ask anything about Rwanda coffee prices, regions, or timing.</p>
             <div className="flex flex-wrap gap-2 mt-2">
               {SUGGESTIONS.map(s => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="text-[11px] rounded-full border border-border px-3 py-1 text-muted-foreground hover:text-foreground hover:border-rwandaGreen transition-colors"
-                >
+                <button key={s} onClick={() => send(s)}
+                  className="text-[11px] rounded-full border border-border px-3 py-1 text-muted-foreground hover:text-foreground hover:border-rwandaGreen transition-colors">
                   {s}
                 </button>
               ))}
@@ -97,22 +128,18 @@ export default function CoffeeChat({ context }: Props) {
             </div>
           ))
         )}
-
         {loading && (
           <div className="text-sm text-muted-foreground">
             <span className="text-[10px] uppercase tracking-widest text-gold mr-1">Advisor</span>
-            <span className="inline-flex gap-1">
-              <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span className="inline-flex gap-1 align-middle">
+              {[0,150,300].map(d => (
+                <span key={d} className="w-1 h-1 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: `${d}ms` }} />
+              ))}
             </span>
           </div>
         )}
-
         <div ref={bottomRef} />
       </div>
-
-      {/* Input */}
       <div className="pt-3 border-t border-border mt-3">
         <div className="flex gap-2">
           <input
@@ -123,11 +150,8 @@ export default function CoffeeChat({ context }: Props) {
             onKeyDown={e => e.key === 'Enter' && send(input)}
             disabled={loading}
           />
-          <button
-            onClick={() => send(input)}
-            disabled={loading || !input.trim()}
-            className="p-2 rounded bg-rwandaGreen text-white disabled:opacity-40 hover:opacity-90 transition-opacity"
-          >
+          <button onClick={() => send(input)} disabled={loading || !input.trim()}
+            className="p-2 rounded bg-rwandaGreen text-white disabled:opacity-40 hover:opacity-90 transition-opacity">
             <Send className="h-4 w-4" />
           </button>
         </div>

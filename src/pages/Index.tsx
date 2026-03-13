@@ -23,7 +23,7 @@ export default function Index() {
   const [pricesLoading, setPricesLoading] = useState(true);
 
   // Live price history + forecast (falls back to static data locally)
-  const { history, forecast, isLive, loading: historyLoading, priceMultiplier } = usePriceHistory();
+  const { history, forecast, isLive, loading: historyLoading, priceMultiplier, forecastSource } = usePriceHistory();
 
   const lastPrice = history[history.length - 1].price;
   const { recommendation, direction, peakDay } = computeSignal(forecast, lastPrice);
@@ -147,7 +147,7 @@ export default function Index() {
       {isLive && forecast.length >= 7 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="stat-card">
-            <p className="section-heading mb-2">LSTM Prediction (Next Day)</p>
+            <p className="section-heading mb-2">{forecastSource === 'lstm' ? 'LSTM Prediction' : 'Trend Forecast'} (Next Day)</p>
             <p className="font-data text-3xl font-bold text-rwandaGreen tracking-tight">
               {currency === "USD"
                 ? `$${rwfToUsd(forecast[0].price).toFixed(2)}`
@@ -162,7 +162,7 @@ export default function Index() {
           </div>
 
           <div className="stat-card">
-            <p className="section-heading mb-2">7-Day LSTM Forecast</p>
+            <p className="section-heading mb-2">7-Day {forecastSource === 'lstm' ? 'LSTM' : 'Trend'} Forecast</p>
             <p className="font-data text-3xl font-bold text-foreground tracking-tight">
               {currency === "USD"
                 ? `$${rwfToUsd(forecast[6].price).toFixed(2)}`

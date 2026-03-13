@@ -2,9 +2,12 @@
 
 A comprehensive platform for exploring Rwanda's coffee market insights, pricing trends, regional analysis, and ROI calculations. This application provides data-driven insights to coffee producers, traders, and investors looking to understand market dynamics and optimize their business decisions.
 
-## 🎥 Video Demo
+##  Video Demo
 
 [Watch App Demo on Google Drive](https://drive.google.com/file/d/1kgtAejUj_1dp_AWkauU1SzirWb8q1KXv/view?usp=sharing)
+
+## Live Demo
+[https://rwanda-coffee-insight.vercel.app/]
 
 ## GitHub Repository
 

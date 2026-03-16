@@ -90,13 +90,18 @@ export default function ROICalculator() {
               type="range"
               min={64000000}
               max={384000000}
-              step={6400000}
+              step={32000000}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
               className="w-full accent-gold cursor-pointer"
             />
             <div className="flex justify-between text-xs text-muted-foreground font-data">
-              <span>{currency === "USD" ? "$50K" : "64M RWF"}</span><span>{currency === "USD" ? "$300K" : "384M RWF"}</span>
+              {(currency === "USD"
+                ? ["$50K", "$100K", "$150K", "$200K", "$250K", "$300K"]
+                : ["64M", "128M", "192M", "256M", "320M", "384M"]
+              ).map((label) => (
+                <span key={label}>{label}</span>
+              ))}
             </div>
           </div>
 

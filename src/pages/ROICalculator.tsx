@@ -49,7 +49,8 @@ function TrafficLight({ value, thresholds }: { value: number; thresholds: [numbe
 }
 
 export default function ROICalculator() {
-  const { currency, rwfToUsd } = useCurrency();
+  const { currency, rwfToUsd, usdToRwf } = useCurrency();
+  const [rawInput, setRawInput] = useState("150000");
   const { priceMultiplier, volatility, bestCaseMultiplier } = usePriceHistory();
   const [amount, setAmount] = useState(202500000); // 150,000 USD * 1350
   const [regionId, setRegionId] = useState("huye");
@@ -80,28 +81,56 @@ export default function ROICalculator() {
         <div className="lg:col-span-2 rounded-lg border border-border bg-card p-5 space-y-6">
           <p className="section-heading">Input Parameters</p>
 
-          {/* Investment amount slider */}
+          {/* Investment amount input */}
           <div className="space-y-3">
-            <div className="flex justify-between items-baseline">
-              <label className="text-sm text-foreground font-medium">Investment Amount</label>
-              <span className="font-data text-lg font-bold text-gold">{fmt(amount)}</span>
+            <label className="text-sm text-foreground font-medium">Investment Amount</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-data">
+                {currency === "USD" ? "$" : "RWF"}
+              </span>
+              <input
+                type="number"
+                min={currency === "USD" ? 50000 : 64000000}
+                max={currency === "USD" ? 300000 : 384000000}
+                value={rawInput}
+                onChange={(e) => {
+                  setRawInput(e.target.value);
+                  const n = Number(e.target.value);
+                  if (!isNaN(n) && n > 0) {
+                    setAmount(currency === "USD" ? usdToRwf(n) : n);
+                  }
+                }}
+                className="w-full rounded border border-border bg-secondary pl-12 pr-4 py-2 font-data text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-gold"
+                placeholder={currency === "USD" ? "e.g. 150000" : "e.g. 202500000"}
+              />
             </div>
-            <input
-              type="range"
-              min={64000000}
-              max={384000000}
-              step={32000000}
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full accent-gold cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground font-data">
+            {/* Quick-select presets */}
+            <div className="grid grid-cols-3 gap-2">
               {(currency === "USD"
-                ? ["$50K", "$100K", "$150K", "$200K", "$250K", "$300K"]
-                : ["64M", "128M", "192M", "256M", "320M", "384M"]
-              ).map((label) => (
-                <span key={label}>{label}</span>
-              ))}
+                ? [50000, 75000, 100000, 150000, 200000, 300000]
+                : [64000000, 101000000, 135000000, 202000000, 270000000, 384000000]
+              ).map((preset) => {
+                const label = currency === "USD"
+                  ? `$${(preset / 1000).toFixed(0)}K`
+                  : `${(preset / 1000000).toFixed(0)}M`;
+                const isActive = Math.abs(amount - (currency === "USD" ? usdToRwf(preset) : preset)) < 1000000;
+                return (
+                  <button
+                    key={preset}
+                    onClick={() => {
+                      setRawInput(String(preset));
+                      setAmount(currency === "USD" ? usdToRwf(preset) : preset);
+                    }}
+                    className={`rounded border px-2 py-1.5 text-xs font-data transition-colors ${
+                      isActive
+                        ? "border-gold bg-gold/10 text-gold"
+                        : "border-border bg-secondary text-muted-foreground hover:border-gold hover:text-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

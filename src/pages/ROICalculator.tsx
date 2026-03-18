@@ -249,6 +249,74 @@ export default function ROICalculator() {
                   ))}
                 </div>
               </div>
+
+              {/* Calculation Breakdown */}
+              {(() => {
+                const baseROI = (region.roi * priceMultiplier) / 100;
+                const risk = region.riskPercent / 100;
+                const bestNetROI  = baseROI * bestCaseMultiplier - risk * 0.1;
+                const expNetROI   = baseROI - risk * 0.5;
+                const worstNetROI = baseROI - risk;
+                const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
+                const r = (n: number) => Math.round(n * 1000) / 1000;
+                const rows: { label: string; formula: string; value: string; note?: string }[] = [
+                  {
+                    label: "Base ROI",
+                    formula: `${region.roi}% × ${r(priceMultiplier)} (price factor)`,
+                    value: pct(baseROI),
+                    note: "Region ROI scaled by live FRED coffee price vs training baseline",
+                  },
+                  {
+                    label: "Risk Rate",
+                    formula: `${region.riskPercent}% (${region.name} historical default)`,
+                    value: pct(risk),
+                  },
+                  {
+                    label: "Best-case Net ROI",
+                    formula: `${pct(baseROI)} × ${r(bestCaseMultiplier)} − ${pct(risk)} × 10%`,
+                    value: pct(bestNetROI),
+                    note: "Favorable market — only 10% of credit risk materializes",
+                  },
+                  {
+                    label: "Expected Net ROI",
+                    formula: `${pct(baseROI)} − ${pct(risk)} × 50%`,
+                    value: pct(expNetROI),
+                    note: "Base assumption — half of credit risk materializes",
+                  },
+                  {
+                    label: "Worst-case Net ROI",
+                    formula: `${pct(baseROI)} − ${pct(risk)} × 100%`,
+                    value: pct(worstNetROI),
+                    note: "Stress scenario — full credit risk materializes",
+                  },
+                  {
+                    label: "Expected Payout",
+                    formula: `${fmt(amount)} × (1 + ${pct(expNetROI)} × ${term}/12)`,
+                    value: fmt(results.expected),
+                    note: "Simple interest over loan term",
+                  },
+                ];
+                return (
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <p className="section-heading mb-1">Calculation Breakdown</p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Step-by-step derivation using your inputs for {region.name} over {term} months
+                    </p>
+                    <div className="space-y-0 divide-y divide-border">
+                      {rows.map((row, i) => (
+                        <div key={i} className="py-2.5 grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5">
+                          <div>
+                            <p className="text-xs font-medium text-foreground">{row.label}</p>
+                            <p className="text-[11px] font-data text-muted-foreground">{row.formula}</p>
+                            {row.note && <p className="text-[10px] text-muted-foreground/70 mt-0.5 italic">{row.note}</p>}
+                          </div>
+                          <span className="font-data text-sm font-bold text-gold self-start pt-0.5 whitespace-nowrap">{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>

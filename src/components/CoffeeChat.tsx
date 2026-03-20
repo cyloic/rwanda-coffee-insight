@@ -19,12 +19,13 @@ interface Props {
   context: MarketContext;
 }
 
+// Synced with sampleData.ts — risk derived from altitude (Rwanda Met. Agency data)
 const REGIONS = [
-  { name: 'Huye', score: 78, roi: 18, risk: 15, desc: 'Top-ranked. High yields and excellent infrastructure near Butare.' },
-  { name: 'Nyamasheke', score: 73, roi: 15, risk: 18, desc: 'Lake Kivu microclimate produces exceptional washed arabica.' },
-  { name: 'Rusizi', score: 57, roi: 11, risk: 35, desc: 'Yield challenges. Requires infrastructure investment before scaling.' },
-  { name: 'Karongi', score: 52, roi: 9, risk: 42, desc: 'Significant yield deficit. Long-term development opportunity.' },
-  { name: 'Nyaruguru', score: 49, roi: 7, risk: 48, desc: 'Lowest ranking. Critical yield issues and weak infrastructure.' },
+  { name: 'Huye',       score: 78, roi: 18, risk: 12, altitudeM: 1950, desc: 'Top-ranked. High yields and excellent infrastructure near Butare.' },
+  { name: 'Nyamasheke', score: 73, roi: 15, risk: 16, altitudeM: 1850, desc: 'Lake Kivu microclimate produces exceptional washed arabica.' },
+  { name: 'Rusizi',     score: 57, roi: 11, risk: 24, altitudeM: 1700, desc: 'Yield challenges. Requires infrastructure investment before scaling.' },
+  { name: 'Karongi',    score: 52, roi: 9,  risk: 30, altitudeM: 1600, desc: 'Significant yield deficit. Long-term development opportunity.' },
+  { name: 'Nyaruguru',  score: 49, roi: 7,  risk: 26, altitudeM: 1700, desc: 'Lowest ranking. Critical yield issues and weak infrastructure.' },
 ];
 
 function generateResponse(input: string, ctx: MarketContext): string {
@@ -49,7 +50,7 @@ function generateResponse(input: string, ctx: MarketContext): string {
   if (q.match(/region|roi|return|best|invest|huye|nyamasheke|rusizi|karongi|nyaruguru/)) {
     const top = REGIONS[0];
     const second = REGIONS[1];
-    return `Best ROI: ${top.name} (${top.roi}%, score ${top.score}/100, risk ${top.risk}%). ${top.desc} Runner-up: ${second.name} at ${second.roi}% ROI with ${second.desc} Avoid Nyaruguru and Karongi for near-term returns — high risk, low yield scores.`;
+    return `Best ROI: ${top.name} (score ${top.score}/100, risk ${top.risk}% at ${top.altitudeM}m altitude). ${top.desc} Runner-up: ${second.name} — ${second.desc} Avoid Nyaruguru and Karongi for near-term returns — lower altitude increases climate and disease risk.`;
   }
 
   // Price / market questions

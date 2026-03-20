@@ -10,13 +10,12 @@ export default function About() {
 
       {/* Problem statement */}
       <div className="rounded-lg border border-gold/30 bg-gold/5 p-5">
-        <h2 className="text-lg font-bold text-gold mb-2">The $36M Credit Gap Problem</h2>
+        <h2 className="text-lg font-bold text-gold mb-2">Rwanda's Smallholder Credit Problem</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Rwanda's coffee sector employs over 211,000 smallholder farmers, yet the majority lack access to
-          formal credit. Financial institutions estimate a <span className="text-foreground font-semibold">$36 million annual credit gap</span> between
-          what's needed for inputs, labor, and processing equipment and what's actually disbursed. This gap
-          results in sub-optimal yields, lost export value, and farmer poverty — despite Rwanda coffee being
-          among the highest-rated specialty grades globally.
+          Rwanda's coffee sector has <span className="text-foreground font-semibold">355,771 registered smallholder farmers</span> across
+          40,356 hectares (NAEB, 2023), yet the majority lack access to formal credit. Over one-third of growers
+          operated at a net loss in recent seasons due to input costs exceeding farm-gate returns — despite Rwanda
+          arabica being among the highest-rated specialty grades globally (ICO Value Chain Report).
         </p>
         <p className="text-sm text-muted-foreground leading-relaxed mt-3">
           Traditional lenders struggle to assess agricultural risk at the smallholder level. CaféInvest bridges
@@ -33,7 +32,7 @@ export default function About() {
             {
               icon: BarChart3,
               title: "ML Price Forecasting",
-              desc: "A gradient boosting model trained on ICO commodity data, East African weather patterns, and Rwanda export records generates 30-day price forecasts with confidence intervals.",
+              desc: "A two-layer LSTM neural network trained on FRED Other Mild Arabica prices generates 30-day price forecasts with MAPE-based confidence intervals. Falls back to trend regression when live prices exceed the training range.",
             },
             {
               icon: Database,

@@ -255,7 +255,7 @@ export default function ROICalculator() {
                 <div className="space-y-2.5">
                   {[
                     { label: "Credit Risk", value: region.riskPercent, thresholds: [15, 25] as [number, number], desc: `Altitude-derived: ${region.altitudeM}m avg (Rwanda Met. Agency)` },
-                    { label: "Weather Risk", value: 100 - region.weatherScore, thresholds: [20, 30] as [number, number], desc: "Based on 5-year climate data" },
+                    { label: "Weather Risk", value: 100 - region.weatherScore, thresholds: [20, 30] as [number, number], desc: `Altitude & rainfall variance — Rwanda Met. Agency (${region.altitudeM}m)` },
                     { label: "Infrastructure Risk", value: 100 - region.infrastructureScore, thresholds: [20, 30] as [number, number], desc: "Road access & processing capacity" },
                     { label: "Market Risk", value: Math.round(volatility), thresholds: [15, 25] as [number, number], desc: `Annualized price volatility (FRED)` },
                   ].map(({ label, value, thresholds, desc }) => (

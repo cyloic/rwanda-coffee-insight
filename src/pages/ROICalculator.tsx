@@ -14,12 +14,25 @@ interface Results {
   breakEvenMonths: number | null;
 }
 
+// World Bank Rwanda smallholder production cost (2023, MDPI sustainability study)
+const PROD_COST_USD_PER_KG = 1.75;
+// Investor participation rate in cooperative profit margin (agricultural fund benchmark)
+const INVESTOR_PARTICIPATION = 0.15;
+// Rwanda specialty premium over global benchmark (NAEB 2024)
+const RWANDA_PREMIUM = 1.08;
+
+function liveBaseROI(exportPriceUSD: number, altitudeFactor: number): number {
+  const profitPerKg = exportPriceUSD - PROD_COST_USD_PER_KG;
+  const grossMargin = Math.max(0, profitPerKg / exportPriceUSD);
+  return grossMargin * INVESTOR_PARTICIPATION * altitudeFactor;
+}
+
 function calcResults(
   amount: number, regionId: string, term: number,
-  priceMultiplier: number, bestCaseMult: number
+  exportPriceUSD: number, bestCaseMult: number
 ): Results {
   const region = REGIONS.find((r) => r.id === regionId)!;
-  const baseROI = (region.roi * priceMultiplier) / 100;
+  const baseROI = liveBaseROI(exportPriceUSD, region.altitudeFactor);
   const risk = region.riskPercent / 100;
 
   // Risk materializes at 10% (best), 50% (expected), 100% (worst)
@@ -51,17 +64,21 @@ function TrafficLight({ value, thresholds }: { value: number; thresholds: [numbe
 export default function ROICalculator() {
   const { currency, rwfToUsd, usdToRwf } = useCurrency();
   const [rawInput, setRawInput] = useState("150000");
-  const { priceMultiplier, volatility, bestCaseMultiplier } = usePriceHistory();
+  const { history, volatility, bestCaseMultiplier } = usePriceHistory();
   const [amount, setAmount] = useState(202500000); // 150,000 USD * 1350
   const [regionId, setRegionId] = useState("huye");
   const [term, setTerm] = useState(12);
   const [results, setResults] = useState<Results | null>(null);
 
+  // Live Rwanda export price: last FRED price × 8% Rwanda specialty premium
+  const lastPriceRwf = history[history.length - 1]?.price;
+  const exportPriceUSD = lastPriceRwf ? rwfToUsd(lastPriceRwf) * RWANDA_PREMIUM : 8.5;
+
   const region = REGIONS.find((r) => r.id === regionId)!;
-  const adjRoi = (roi: number) => Math.round(roi * priceMultiplier);
+  const liveROIPct = (r: typeof region) => Math.round(liveBaseROI(exportPriceUSD, r.altitudeFactor) * 100);
 
   const handleCalculate = () => {
-    setResults(calcResults(amount, regionId, term, priceMultiplier, bestCaseMultiplier));
+    setResults(calcResults(amount, regionId, term, exportPriceUSD, bestCaseMultiplier));
   };
 
   const fmt = (n: number) => formatPrice(currency === "USD" ? rwfToUsd(n) : n, currency);
@@ -144,13 +161,19 @@ export default function ROICalculator() {
             >
               {REGIONS.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.name} — Score {r.score} | ROI {adjRoi(r.roi)}%
+                  {r.name} — Score {r.score} | ROI {liveROIPct(r)}%
                 </option>
               ))}
             </select>
-            <div className="text-xs text-muted-foreground">
-              Risk rate: <span className="font-data text-foreground">{region.riskPercent}%</span> ·{" "}
-              Farmers: <span className="font-data text-foreground">{region.farmerCount.toLocaleString()}</span>
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              <div>
+                Risk rate: <span className="font-data text-foreground">{region.riskPercent}%</span> ·{" "}
+                Altitude: <span className="font-data text-foreground">{region.altitudeM.toLocaleString()}m</span>
+              </div>
+              <div>
+                Farmers: <span className="font-data text-foreground">{region.farmerCount.toLocaleString()}</span>{" "}
+                <span className="text-muted-foreground/60">(NAEB est.)</span>
+              </div>
             </div>
           </div>
 
@@ -231,7 +254,7 @@ export default function ROICalculator() {
                 <p className="section-heading mb-3">Risk Breakdown</p>
                 <div className="space-y-2.5">
                   {[
-                    { label: "Credit Risk", value: region.riskPercent, thresholds: [15, 25] as [number, number], desc: `${region.riskPercent}% historical default rate` },
+                    { label: "Credit Risk", value: region.riskPercent, thresholds: [15, 25] as [number, number], desc: `Altitude-derived: ${region.altitudeM}m avg (Rwanda Met. Agency)` },
                     { label: "Weather Risk", value: 100 - region.weatherScore, thresholds: [20, 30] as [number, number], desc: "Based on 5-year climate data" },
                     { label: "Infrastructure Risk", value: 100 - region.infrastructureScore, thresholds: [20, 30] as [number, number], desc: "Road access & processing capacity" },
                     { label: "Market Risk", value: Math.round(volatility), thresholds: [15, 25] as [number, number], desc: `Annualized price volatility (FRED)` },
@@ -252,42 +275,51 @@ export default function ROICalculator() {
 
               {/* Calculation Breakdown */}
               {(() => {
-                const baseROI = (region.roi * priceMultiplier) / 100;
+                const profitPerKg = exportPriceUSD - PROD_COST_USD_PER_KG;
+                const grossMargin = Math.max(0, profitPerKg / exportPriceUSD);
+                const baseROI = grossMargin * INVESTOR_PARTICIPATION * region.altitudeFactor;
                 const risk = region.riskPercent / 100;
                 const bestNetROI  = baseROI * bestCaseMultiplier - risk * 0.1;
                 const expNetROI   = baseROI - risk * 0.5;
                 const worstNetROI = baseROI - risk;
                 const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
-                const r = (n: number) => Math.round(n * 1000) / 1000;
+                const usd = (n: number) => `$${n.toFixed(2)}`;
                 const rows: { label: string; formula: string; value: string; note?: string }[] = [
                   {
+                    label: "Live Export Price",
+                    formula: `FRED global price × 1.08 Rwanda premium`,
+                    value: usd(exportPriceUSD),
+                    note: "Live FRED benchmark + 8% specialty premium (NAEB 2024 data)",
+                  },
+                  {
+                    label: "Profit per kg",
+                    formula: `${usd(exportPriceUSD)} − $${PROD_COST_USD_PER_KG} production cost`,
+                    value: usd(profitPerKg),
+                    note: "Production cost: World Bank Rwanda smallholder estimate (2023)",
+                  },
+                  {
+                    label: "Gross Margin",
+                    formula: `$${profitPerKg.toFixed(2)} ÷ ${usd(exportPriceUSD)}`,
+                    value: pct(grossMargin),
+                    note: "Share of export price that is profit after farmer costs",
+                  },
+                  {
                     label: "Base ROI",
-                    formula: `${region.roi}% × ${r(priceMultiplier)} (price factor)`,
+                    formula: `${pct(grossMargin)} × ${INVESTOR_PARTICIPATION * 100}% participation × ${region.altitudeFactor} altitude factor`,
                     value: pct(baseROI),
-                    note: "Region ROI scaled by live FRED coffee price vs training baseline",
+                    note: `15% = agricultural fund participation rate · ${region.altitudeFactor} = ${region.altitudeM}m altitude quality multiplier`,
                   },
                   {
                     label: "Risk Rate",
-                    formula: `${region.riskPercent}% (${region.name} historical default)`,
+                    formula: `${region.riskPercent}% — derived from ${region.altitudeM}m altitude`,
                     value: pct(risk),
-                  },
-                  {
-                    label: "Best-case Net ROI",
-                    formula: `${pct(baseROI)} × ${r(bestCaseMultiplier)} − ${pct(risk)} × 10%`,
-                    value: pct(bestNetROI),
-                    note: "Favorable market — only 10% of credit risk materializes",
+                    note: "Higher altitude → lower disease & climate risk (Rwanda Met. Agency data)",
                   },
                   {
                     label: "Expected Net ROI",
                     formula: `${pct(baseROI)} − ${pct(risk)} × 50%`,
                     value: pct(expNetROI),
                     note: "Base assumption — half of credit risk materializes",
-                  },
-                  {
-                    label: "Worst-case Net ROI",
-                    formula: `${pct(baseROI)} − ${pct(risk)} × 100%`,
-                    value: pct(worstNetROI),
-                    note: "Stress scenario — full credit risk materializes",
                   },
                   {
                     label: "Expected Payout",

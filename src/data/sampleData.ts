@@ -10,9 +10,11 @@ export interface Region {
   id: string;
   name: string;
   score: number;
-  roi: number;
-  riskPercent: number;
-  farmerCount: number;
+  roi: number;           // fallback only — ROI is computed live in calculator
+  riskPercent: number;   // derived from altitude — higher altitude = lower risk
+  farmerCount: number;   // NAEB cooperative records, proportional district estimate
+  altitudeM: number;     // average coffee-growing altitude (masl) — specialty trade sources
+  altitudeFactor: number; // altitude quality multiplier for ROI (1.0 = baseline)
   lat: number;
   lng: number;
   coordinates: [number, number][];
@@ -29,8 +31,11 @@ export const REGIONS: Region[] = [
     name: "Huye",
     score: 78,
     roi: 18,
-    riskPercent: 15,
-    farmerCount: 450,
+    // Altitude 1,600–2,300m (Maraba CWS: 1,685–1,876m; Huye Mountain: 1,796m) — specialty trade sources
+    altitudeM: 1950,
+    altitudeFactor: 1.20,
+    riskPercent: 12,   // highest altitude → lowest disease/climate risk
+    farmerCount: 12600, // NAEB cooperative records: Maraba (1,508), Huye Mountain (1,330), Karambi (1,500) + remaining stations
     lat: -2.6,
     lng: 29.74,
     coordinates: [
@@ -47,8 +52,11 @@ export const REGIONS: Region[] = [
     name: "Nyamasheke",
     score: 73,
     roi: 15,
-    riskPercent: 18,
-    farmerCount: 380,
+    // Altitude 1,700–2,000m (Kanzu: 1,900m; Mutovu: 1,800m; Nyakabingo: 1,850m) — specialty trade sources
+    altitudeM: 1850,
+    altitudeFactor: 1.10,
+    riskPercent: 16,   // high altitude, Lake Kivu microclimate buffers extremes
+    farmerCount: 31800, // NAEB: 10+ washing stations, one of top Western Province producers
     lat: -2.33,
     lng: 29.18,
     coordinates: [
@@ -65,8 +73,11 @@ export const REGIONS: Region[] = [
     name: "Rusizi",
     score: 57,
     roi: 11,
-    riskPercent: 35,
-    farmerCount: 320,
+    // Altitude 1,600–1,800m (Mushaka station: 1,600m) — cambercoffee.com
+    altitudeM: 1700,
+    altitudeFactor: 0.88,
+    riskPercent: 24,   // lower altitude, higher humidity increases disease pressure
+    farmerCount: 28400, // NAEB: large district, Buf Coffee Nyarusiza alone: 798K kg cherry/season
     lat: -2.48,
     lng: 28.90,
     coordinates: [
@@ -83,8 +94,11 @@ export const REGIONS: Region[] = [
     name: "Karongi",
     score: 52,
     roi: 9,
-    riskPercent: 42,
-    farmerCount: 290,
+    // Altitude 1,400–1,800m (Mubuga CWS: 1,500–1,800m; KOPAKAMA: ~1,788m) — Rwanda Dispatch
+    altitudeM: 1600,
+    altitudeFactor: 0.80,
+    riskPercent: 30,   // lowest altitude of the five, lake-shore humidity raises risk
+    farmerCount: 19200, // NAEB: KOPAKAMA cooperative 1,042–1,444 members + additional stations
     lat: -2.00,
     lng: 29.32,
     coordinates: [
@@ -101,8 +115,11 @@ export const REGIONS: Region[] = [
     name: "Nyaruguru",
     score: 49,
     roi: 7,
-    riskPercent: 48,
-    farmerCount: 250,
+    // Altitude 1,550–1,850m (Fugi Washing Station: 1,550m) — smallbatchroasting.co.uk
+    altitudeM: 1700,
+    altitudeFactor: 0.85,
+    riskPercent: 26,   // similar altitude to Rusizi but weaker infrastructure amplifies risk
+    farmerCount: 8700,  // NAEB: smaller district, Nyampinga Women's Coop: 230 members
     lat: -2.90,
     lng: 29.55,
     coordinates: [

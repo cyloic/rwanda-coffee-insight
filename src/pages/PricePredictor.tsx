@@ -10,7 +10,7 @@ import {
 
 export default function PricePredictor() {
   const { currency, rwfToUsd } = useCurrency();
-  const { history, forecast, isLive, forecastSource } = usePriceHistory();
+  const { history, forecast, isLive, forecastSource, volatility } = usePriceHistory();
   const lastPrice = history[history.length - 1].price;
   const predictedPrice = forecast[forecast.length - 1].price;
   const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
@@ -168,7 +168,11 @@ export default function PricePredictor() {
             forecastDirection: direction,
             signal: recommendation,
             forecastSource,
-            volatilityPct: undefined,
+            volatilityPct: volatility,
+            peakDay,
+            avgConfidence,
+            priceChangePct: Number(priceChange),
+            forecastPriceUsd: Number(rwfToUsd(predictedPrice).toFixed(2)),
           }}
         />
       </div>

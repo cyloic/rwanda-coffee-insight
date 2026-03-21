@@ -1,325 +1,204 @@
 # Rwanda Coffee Insight
 
-A comprehensive platform for exploring Rwanda's coffee market insights, pricing trends, regional analysis, and ROI calculations. This application provides data-driven insights to coffee producers, traders, and investors looking to understand market dynamics and optimize their business decisions.
+A data-driven investment intelligence platform for Rwanda's specialty coffee sector. Built for agricultural lenders, cooperative financiers, and impact investors who need live market data, regional scoring, and on-ground infrastructure visibility before deploying capital.
 
-##  Video Demo
+## Video Demo
 
 [Watch App Demo on Google Drive](https://drive.google.com/file/d/1kgtAejUj_1dp_AWkauU1SzirWb8q1KXv/view?usp=sharing)
 
 ## Live Demo
-[https://rwanda-coffee-insight.vercel.app/]
+
+[https://rwanda-coffee-insight.vercel.app/](https://rwanda-coffee-insight.vercel.app/)
 
 ## GitHub Repository
 
-[Rwanda Coffee Insight - GitHub](https://github.com/cyloic/rwanda-coffee-insight)
+[https://github.com/cyloic/rwanda-coffee-insight](https://github.com/cyloic/rwanda-coffee-insight)
 
-## Description
+---
 
-Rwanda Coffee Insight is a web-based application designed to deliver actionable insights into Rwanda's coffee industry. The platform features:
+## Platform Features
 
-- **Price Analysis & Predictions**: Real-time coffee price tracking and ML-powered price predictions
-- **Regional Analysis**: Market insights broken down by region with detailed statistics
-- **ROI Calculator**: Tool to calculate return on investment for coffee farming operations
-- **Market Opportunities**: Identification of top opportunities in the coffee supply chain
-- **Interactive Visualizations**: Charts and maps for easy data exploration
+### Dashboard
+Live market prices fetched from the FRED Other Mild Arabica series (ICO-sourced). Shows global benchmark, Rwanda export price (8% specialty premium per NAEB 2024), and the live RWF/USD exchange rate. Price cards only render when live data is confirmed — no stale fallback values shown.
+
+### Price Predictor
+30-day momentum trend forecast on FRED monthly data, interpolated to daily values. Uses a weighted linear regression on a 90-day trailing window. Uncertainty bands widen over the horizon — Day 1–14 signals are actionable; Day 15–30 are directional only. Includes a methodology disclosure panel so the approach is fully transparent.
+
+### Regional Analysis
+Comparative investment scoring across 5 primary coffee districts (Huye, Nyamasheke, Rusizi, Karongi, Nyaruguru). Scores derived from the ML model in `Notebook/Rwanda_Coffee_ML.ipynb`. Risk percentages tied to altitude data from the Rwanda Meteorological Agency — higher altitude correlates with lower CBD disease pressure and lower default risk. Drill-down detail modal with score breakdown and a direct link to washing stations per district.
+
+### ROI Calculator
+Models best-case, expected, and worst-case returns using:
+- Live export price (FRED × 1.08 Rwanda premium)
+- Production cost: $1.75/kg (World Bank Rwanda smallholder 2023)
+- Altitude factor per region
+- 15% agricultural fund participation rate
+- Risk materialisation at 10% / 50% / 100% across scenarios
+
+Investment amount is entered via a free-text input with USD quick-select presets ($50K–$300K), converted to RWF using the live exchange rate.
+
+### Back-Test
+Validates the ROI model against real historical FRED prices. Select a region, amount, and look-back period (6 / 12 / 18 / 24 months). The entry and exit prices are actual FRED data points — no modelled values. Includes a step-by-step calculation breakdown panel so every number is traceable.
+
+### Washing Stations
+28 verified coffee washing stations across all 5 districts, sourced from NAEB, the Alliance for Coffee Excellence (Cup of Excellence Rwanda), and specialty importers (Sustainable Harvest, Covoya, Buf Coffee, Kopakama). Each station shows altitude, farmer count, varietals, processing methods, certifications, and verified CoE results where applicable. Interactive Leaflet map with district colour-coding and CoE winner markers. Clicking a station opens an inline detail panel — the map stays fully visible. Direct Google Maps and importer profile links included.
+
+### AI Market Advisor
+Rule-based advisor on the Price Predictor page using live context (current price, forecast direction, peak day, volatility, confidence). Handles questions on timing, regional ROI comparison, price drivers, forecast reliability, risk factors, entry-point analysis, and harvest seasonality. No external API dependency — works instantly with zero cost.
+
+---
+
+## Data Sources
+
+| Data | Source | Update frequency |
+|---|---|---|
+| Global arabica benchmark | FRED — Other Mild Arabica (`PCOFFOTMUSDM`) | Monthly (ICO, ~4–6 week lag) |
+| RWF/USD exchange rate | open.er-api.com | Live on page load |
+| Rwanda specialty premium | NAEB Annual Report 2024 | Annual |
+| Production cost | World Bank Rwanda smallholder 2023 | Annual |
+| Regional investment scores | ML model — `Notebook/Rwanda_Coffee_ML.ipynb` | Model output |
+| Risk rates | Altitude proxy — Rwanda Meteorological Agency | Static |
+| Farmer counts | NAEB cooperative registry 2022/23 | Annual |
+| Washing station data | NAEB, Cup of Excellence, specialty importers | Last verified March 2026 |
+
+---
 
 ## Tech Stack
 
-This project is built with modern web technologies for optimal performance and user experience:
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 + TypeScript |
+| Build tool | Vite |
+| Styling | Tailwind CSS |
+| UI components | shadcn-ui |
+| Charts | Recharts |
+| Maps | Leaflet |
+| Serverless functions | Vercel Edge Functions (Node.js) |
+| ML notebook | Python — scikit-learn, pandas, FRED API |
+| Package manager | Bun |
 
-- **Frontend Framework**: React with TypeScript
-- **Build Tool**: Vite
-- **UI Component Library**: shadcn-ui
-- **Styling**: Tailwind CSS
-- **Data Visualization**: Chart.js & Plotly
-- **Testing**: Vitest
-- **Package Manager**: npm & Bun
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v16 or higher) - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-- npm or Bun package manager
-
-### Local Development Setup
-
-To set up and run the project locally:
-
-```sh
-# Step 1: Clone the repository
-git clone https://github.com/cyloic/rwanda-coffee-insight.git
-
-# Step 2: Navigate to the project directory
-cd rwanda-coffee-insight
-
-# Step 3: Install dependencies
-npm install
-# or if using Bun:
-bun install
-
-# Step 4: Start the development server with hot-reloading
-npm run dev
-# or
-bun run dev
-```
-
-The application will be available at `http://localhost:5173` with automatic hot-reload enabled.
-
-### Alternative Development Methods
-
-**Edit directly in GitHub**
-- Navigate to any file in the repository
-- Click the "Edit" button (pencil icon) at the top right
-- Make your changes and commit directly
-
-**Use GitHub Codespaces**
-- Click on the "Code" button near the top right of the repository
-- Select the "Codespaces" tab
-- Click "New codespace" to create a cloud-based development environment
-- Edit files and push changes directly from the browser
-
-## Designs
-
-### App Interface Screenshots
-
-The application features an intuitive user interface with the following key screens:
-
-#### Dashboard & Price Overview
-
-![ss1](https://github.com/user-attachments/assets/a384a57d-2b55-48ff-8eb3-c6c540155934)
-
-
-#### Price Chart & Trends
-![ss3](https://github.com/user-attachments/assets/59caf322-7e3d-4e5c-974a-c4390453c50f)
-
-
-#### Regional Analysis
-![sss4](https://github.com/user-attachments/assets/106e0917-d5af-4954-9acb-935edb883394)
-
-
-#### Market Opportunities
-![ss2](https://github.com/user-attachments/assets/fd3eb416-5b2f-48a4-b926-fe808b519be8)
-
-
-#### ROI Calculator
-
-![ss5](https://github.com/user-attachments/assets/93686107-3fe4-49e0-90d7-175d79dca0bb)
-
-
-
-#### Platform Overview
-![ss8](https://github.com/user-attachments/assets/9bb4f730-915b-4be8-aa4e-a3dfdce69f20)
-
-
-
-
-### System Architecture
-
-The application follows a modern component-based architecture:
-- **Frontend**: Responsive React components with shadow CN UI
-- **Data Processing**: Python ML models for price prediction (in Jupyter Notebook)
-- **State Management**: React hooks for local state management
-- **API Communication**: RESTful integration ready
+---
 
 ## Project Structure
 
 ```
 src/
-├── components/          # Reusable React components
-│   ├── ui/             # shadcn-ui components
-│   └── [Feature components]
-├── pages/              # Page components (Index, About, PricePredictor, etc.)
-├── data/               # Sample data and constants
-├── hooks/              # Custom React hooks
-├── lib/                # Utility functions
-└── test/               # Unit tests
+├── components/
+│   ├── CoffeeChat.tsx       # Rule-based AI market advisor
+│   ├── Navbar.tsx
+│   ├── RwandaMap.tsx        # Leaflet region map (dashboard)
+│   └── ui/                  # shadcn-ui primitives
+├── pages/
+│   ├── Index.tsx            # Dashboard
+│   ├── PricePredictor.tsx   # Trend forecast + AI advisor
+│   ├── RegionalAnalysis.tsx # Sortable region table + detail modal
+│   ├── ROICalculator.tsx    # Scenario modeller
+│   ├── Backtest.tsx         # Historical return validation
+│   └── Stations.tsx         # Washing station map + directory
+├── data/
+│   ├── sampleData.ts        # Region definitions (scores, risk, farmers)
+│   └── washingStations.ts   # 28 verified CWS records
+├── hooks/
+│   └── usePriceHistory.ts   # FRED data fetch + trend forecast
+├── lib/
+│   └── lstmInference.ts     # LSTM forward-pass (browser TypeScript)
+└── context/
+    └── CurrencyContext.tsx  # Live RWF/USD toggle
+
+api/
+├── coffee-prices.ts         # Vercel function — FRED fetch + trend forecast
+└── exchange-rate.ts         # Vercel function — live FX rate
 
 Notebook/
-└── Rwanda_Coffee_ML.ipynb  # Machine learning models for price prediction
+└── Rwanda_Coffee_ML.ipynb   # ML training: regional scoring, LSTM
+
+public/
+└── lstmModel/weights.json   # Trained LSTM weights (1.1 MB)
+
+deployment/
+└── scaler_params.json       # MinMaxScaler params from sklearn
 ```
-
-## Testing Results
-
-This section documents the current verified testing evidence for the app, the trained LSTM model, and the main runtime paths used in production.
-
-### 1. Model Performance Testing
-
-Model configuration and evaluation metrics are stored in `deployment/model_config.json`.
-
-| Metric | Result |
-| --- | --- |
-| Model type | LSTM (30-step sequence, 5 input features) |
-| MAPE | 1.08% |
-| MAE | 0.0411 USD/kg |
-| RMSE | 0.0557 USD/kg |
-| Trained date | 2026-03-05 |
-
-**Feature set used by the model**
-
-- Price_USD_per_kg
-- Rainfall_mm
-- Temperature_C
-- Price_7d_ago
-- Price_30d_ago
-
-**Training and validation artifacts**
-
-- The end-to-end training workflow is documented in `Notebook/Rwanda_Coffee_ML.ipynb`.
-- Training and validation loss inspection is part of the notebook workflow used to export the production model.
-- The production app serves the trained weights from `public/lstmModel/weights.json` and runs inference client-side in TypeScript.
-
-**Model comparison in production**
-
-| Forecast path | Purpose in app | Current status |
-| --- | --- | --- |
-| LSTM forecast | Primary ML prediction path after weights load | Production path |
-| Trend forecast | Fast fallback shown immediately while LSTM loads or if weights are unavailable | Production fallback |
-
-### 2. Different Data Values Testing
-
-**Regional output comparison**
-
-The app was checked against materially different regional profiles to confirm that scores, ROI, and risk outputs change as expected.
-
-| Region | Score | ROI | Risk | Interpretation |
-| --- | --- | --- | --- | --- |
-| Huye | 78/100 | 18% | 15% | Highest-ranked option with strong infrastructure and yield profile |
-| Karongi | 52/100 | 9% | 42% | Lower-return, higher-risk profile flagged as a long-term development case |
-
-**Currency conversion examples**
-
-The UI supports both RWF and USD display. For example, using the model training conversion rate of 1350 RWF/USD:
-
-| RWF value | USD equivalent |
-| --- | --- |
-| 5,400 RWF/kg | 4.00 USD/kg |
-| 7,425 RWF/kg | 5.50 USD/kg |
-
-Note: the live app uses the FX rate returned by the serverless API when available; the 1350 rate above is included as a reproducible benchmark example from the model configuration.
-
-**Edge-case and failure-path checks**
-
-| Scenario | Expected behavior | Current handling |
-| --- | --- | --- |
-| Coffee price API unavailable | App should avoid showing stale live data | Dashboard hides live-price cards and shows an unavailable state instead of stale values |
-| LSTM weights unavailable | Forecast view should still work | Hook keeps the trend forecast instead of crashing the UI |
-| ROI input extremes | User inputs should stay within supported operating ranges | ROI amount slider is constrained to 64M-384M RWF and loan term options are fixed to 6, 12, 18, or 24 months |
-
-### 3. Different Hardware / Software Testing
-
-**Current verified software checks**
-
-| Check | Result |
-| --- | --- |
-| Unit test suite | Passed: 1 test file, 1 test, 0 failures |
-| Test runtime | 3.04s using Vitest |
-| Production build | Passed with Vite |
-| Build runtime | 11.77s |
-| Build note | Bundle succeeds, but the main JS chunk is above 500 kB and should be optimized further |
-
-**Verified build environment**
-
-| Environment area | Result |
-| --- | --- |
-| Local development OS | Windows |
-| Frontend toolchain | React + TypeScript + Vite |
-| Deployment target | Vercel |
-| Responsive UI implementation | Desktop and mobile breakpoints are implemented across dashboard, charts, regional analysis, and ROI pages |
-
-**Browser and device coverage note**
-
-- The current repository includes verified automated test, build, and deployment-path validation.
-- A formal Lighthouse run and manual browser matrix for Chrome, Firefox, Safari, and Edge should be added as final QA evidence before grading if the rubric requires separate performance screenshots.
-
-## Deployment Plan
-
-### Pre-Deployment Checklist
-
-- [ ] Run all tests: `npm run test`
-- [ ] Build for production: `npm run build`
-- [ ] Verify build output in `dist/` folder
-- [ ] Test the production build locally
-- [ ] Review environment variables and secrets
-
-### Deployment Options
-
-#### Option 1: Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Go to [Vercel.com](https://vercel.com)
-3. Click "New Project" and import the repository
-4. Configure build settings:
-   - Build command: `npm run build`
-   - Output directory: `dist`
-5. Click "Deploy"
-
-#### Option 2: Netlify
-
-1. Connect your GitHub repository
-2. Go to [Netlify.com](https://netlify.com) and create a new site
-3. Configure build settings:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-4. Deploy automatically on every push
-
-#### Option 3: Traditional Hosting (AWS, Google Cloud, Azure)
-
-1. Build the application: `npm run build`
-2. Upload the `dist` folder to your hosting provider
-3. Configure your web server to serve `index.html` for all routes
-4. Set up SSL certificates for HTTPS
-5. Configure domain and DNS settings
-
-### Environment Variables
-
-Create a `.env` file for production deployment with necessary configurations:
-
-```env
-VITE_API_URL=your_api_endpoint
-VITE_COFFEE_PRICE_API=your_coffee_price_api_endpoint
-```
-
-### Post-Deployment
-
-- [ ] Test all pages and features on the live deployment
-- [ ] Verify responsive design on mobile devices
-- [ ] Check browser console for errors
-- [ ] Set up monitoring and analytics
-- [ ] Configure error tracking (Sentry, LogRocket, etc.)
-
-## Building for Production
-
-```sh
-# Build the optimized production bundle
-npm run build
-
-# Preview the production build locally
-npm run preview
-```
-
-## Available Scripts
-
-```sh
-npm run dev        # Start development server
-npm run build      # Build for production
-npm run preview    # Preview production build locally
-npm run test       # Run unit tests
-npm run lint       # Run ESLint
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For questions or issues, please open an issue on the [GitHub repository](https://github.com/cyloic/rwanda-coffee-insight/issues).
 
 ---
 
-**Last Updated**: February 2026
+## Getting Started
+
+### Prerequisites
+
+- Node.js v18+ or Bun
+
+### Local Development
+
+```sh
+git clone https://github.com/cyloic/rwanda-coffee-insight.git
+cd rwanda-coffee-insight
+bun install
+bun run dev
+```
+
+App runs at `http://localhost:5173`. The serverless API functions (`/api/*`) require Vercel CLI for local execution:
+
+```sh
+npm i -g vercel
+vercel dev
+```
+
+### Production Build
+
+```sh
+bun run build
+bun run preview
+```
+
+---
+
+## Testing Results
+
+### Model Performance
+
+Trained model metrics stored in `deployment/model_config.json`:
+
+| Metric | Result |
+|---|---|
+| Model type | LSTM — 30-step sequence, 5 input features |
+| MAPE | 1.08% |
+| MAE | 0.0411 USD/kg |
+| RMSE | 0.0557 USD/kg |
+| Trained | 2026-03-05 |
+
+Note: current coffee prices (~$8.68/kg) exceed the LSTM training ceiling ($5.70/kg). The app runs a trend forecast in production. The LSTM weights are shipped and the inference engine is live — retraining on 2024–2026 data would re-enable the LSTM path.
+
+### Forecast Method
+
+| Path | Method | Status |
+|---|---|---|
+| Trend forecast | Weighted linear regression on 90-day FRED window | Active (production) |
+| LSTM forecast | Two-layer LSTM, 64 units × 2, browser TypeScript | OOD guard active — prices above training ceiling |
+
+### Edge Cases
+
+| Scenario | Behaviour |
+|---|---|
+| FRED API unavailable | Live price cards hidden; no stale data shown |
+| LSTM out-of-distribution | Silently falls back to trend forecast |
+| Exchange rate API unavailable | Falls back to 1,350 RWF/USD |
+| Look-back period exceeds history | Back-test shows "not enough data" message |
+
+### Build
+
+| Check | Result |
+|---|---|
+| Unit tests | 1 file, 1 test, 0 failures (Vitest) |
+| Production build | Passing (Vite + Bun) |
+| TypeScript | 0 errors |
+| Deployment | Vercel — auto-deploy on push to `main` |
+
+---
+
+## Deployment
+
+Deployed on Vercel. Auto-deploys on every push to `main`. No environment variables required for the frontend. The `/api/coffee-prices` serverless function calls FRED and open.er-api.com — both are public endpoints with no API key required.
+
+---
+
+**Last Updated**: March 2026

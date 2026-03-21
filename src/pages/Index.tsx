@@ -142,11 +142,11 @@ export default function Index() {
         </div>
       )}
 
-      {/* LSTM Predictions — only render once live API data has loaded */}
+      {/* Price forecast cards — only render once live API data has loaded */}
       {isLive && forecast.length >= 7 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="stat-card">
-            <p className="section-heading mb-2">{forecastSource === 'lstm' ? 'LSTM Prediction' : 'Trend Forecast'} (Next Day)</p>
+            <p className="section-heading mb-2">Trend Forecast (Next Day)</p>
             <p className="font-data text-3xl font-bold text-rwandaGreen tracking-tight">
               {currency === "USD"
                 ? `$${rwfToUsd(forecast[0].price).toFixed(2)}`
@@ -155,13 +155,13 @@ export default function Index() {
             </p>
             <div className="mt-3 flex items-center gap-1.5">
               <span className="text-xs font-data text-green-600">
-                Confidence: {forecast[0].confidence}%
+                Certainty: {forecast[0].confidence}%
               </span>
             </div>
           </div>
 
           <div className="stat-card">
-            <p className="section-heading mb-2">7-Day {forecastSource === 'lstm' ? 'LSTM' : 'Trend'} Forecast</p>
+            <p className="section-heading mb-2">7-Day Trend Forecast</p>
             <p className="font-data text-3xl font-bold text-foreground tracking-tight">
               {currency === "USD"
                 ? `$${rwfToUsd(forecast[6].price).toFixed(2)}`

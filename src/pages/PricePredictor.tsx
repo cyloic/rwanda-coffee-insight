@@ -45,9 +45,7 @@ export default function PricePredictor() {
         <p className="section-heading mb-1">Market Intelligence</p>
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">Price Predictor</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {forecastSource === "lstm"
-            ? "LSTM-powered 30-day price forecast with confidence intervals"
-            : "Trend-based 30-day price forecast with confidence intervals"}
+          30-day momentum trend forecast · FRED Other Mild Arabica · interpolated daily
         </p>
       </div>
 
@@ -57,7 +55,7 @@ export default function PricePredictor() {
           { label: "Current Price", value: formatPrice(currency === "USD" ? rwfToUsd(lastPrice) : lastPrice, currency), sub: `per kg (${currency})`, color: "text-gold" },
           { label: "30-Day Forecast", value: formatPrice(currency === "USD" ? rwfToUsd(predictedPrice) : predictedPrice, currency), sub: `per kg (${currency})`, color: "text-rwandaGreen" },
           { label: "Expected Change", value: `+${priceChange}%`, sub: "over 30 days", color: "text-rwandaGreen" },
-          { label: "Confidence", value: `${avgConfidence}%`, sub: "model accuracy", color: "text-foreground" },
+          { label: "Trend Certainty", value: `${avgConfidence}%`, sub: "decays over horizon", color: "text-foreground" },
         ].map((card) => (
           <div key={card.label} className="stat-card">
             <p className="section-heading mb-2">{card.label}</p>
@@ -98,11 +96,11 @@ export default function PricePredictor() {
       <div className="rounded-lg border border-border bg-card p-4">
         <div className="flex items-center justify-between mb-3">
           <p className="section-heading">
-            30-Day {forecastSource === "lstm" ? "LSTM" : "Trend"} Forecast with Confidence Interval
+            30-Day Trend Forecast with Uncertainty Bands
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="rounded border border-border px-2 py-0.5 font-data text-[10px] uppercase tracking-wider">
-              Source: {forecastSource === "lstm" ? "LSTM" : "Trend"}
+              Source: FRED · Trend
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-5 rounded-sm bg-rwandaGreen/20 border border-rwandaGreen/40" />
@@ -156,6 +154,12 @@ export default function PricePredictor() {
             />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Methodology note */}
+      <div className="rounded border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
+        <span className="text-foreground font-semibold">Methodology: </span>
+        Price history is sourced from FRED (Federal Reserve Economic Data) — Other Mild Arabica monthly series, published by the ICO with a ~4–6 week lag. Daily values are linearly interpolated between monthly observations. The 30-day forecast uses momentum trend extrapolation: a weighted linear regression on the trailing 90 days, with uncertainty bands that widen over the horizon. Directional signals are most reliable within the first 14 days; treat Day 15–30 as indicative only.
       </div>
 
       {/* AI Advisor */}

@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: "/prices", label: "Prices" },
   { to: "/regions", label: "Regions" },
   { to: "/calculator", label: "Calculator" },
+  { to: "/backtest", label: "Back-Test" },
   { to: "/about", label: "About" },
 ];
 

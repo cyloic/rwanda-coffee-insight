@@ -12,6 +12,7 @@ import RegionalAnalysis from "./pages/RegionalAnalysis";
 import ROICalculator from "./pages/ROICalculator";
 import About from "./pages/About";
 import Backtest from "./pages/Backtest";
+import Stations from "./pages/Stations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
                 <Route path="/regions" element={<RegionalAnalysis />} />
                 <Route path="/calculator" element={<ROICalculator />} />
                 <Route path="/backtest" element={<Backtest />} />
+                <Route path="/stations" element={<Stations />} />
                 <Route path="/about" element={<About />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

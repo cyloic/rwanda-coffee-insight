@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { REGIONS, Region } from "@/data/sampleData";
 import { usePriceHistory } from "@/hooks/usePriceHistory";
-import { ArrowUpDown, ChevronDown, X } from "lucide-react";
+import { ArrowUpDown, X, MapPin } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 
 type SortKey = "score" | "roi" | "riskPercent" | "farmerCount";
@@ -29,6 +30,7 @@ export default function RegionalAnalysis() {
   const [sortAsc, setSortAsc] = useState(false);
   const [selected, setSelected] = useState<Region | null>(null);
   const [filter, setFilter] = useState<"all" | "high" | "mid" | "low">("all");
+  const navigate = useNavigate();
   const { priceMultiplier } = usePriceHistory();
   const adjRoi = (roi: number) => Math.round(roi * priceMultiplier);
 
@@ -199,6 +201,14 @@ export default function RegionalAnalysis() {
               </div>
 
               <p className="text-sm text-muted-foreground leading-relaxed">{selected.description}</p>
+
+              <button
+                onClick={() => navigate(`/stations?district=${selected.name}`)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded border border-rwandaGreen text-rwandaGreen hover:bg-rwandaGreen hover:text-white transition-colors text-sm font-semibold"
+              >
+                <MapPin className="h-4 w-4" />
+                View Washing Stations in {selected.name}
+              </button>
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { to: "/regions", label: "Regions" },
   { to: "/calculator", label: "Calculator" },
   { to: "/backtest", label: "Back-Test" },
+  { to: "/stations", label: "Stations" },
   { to: "/about", label: "About" },
 ];
 

@@ -17,111 +17,6 @@ function CertBadge({ cert }: { cert: string }) {
   );
 }
 
-function StationDetail({ station, onClose }: { station: WashingStation; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <div className="rounded-lg border border-border bg-card w-full max-w-lg shadow-2xl animate-fade-in overflow-y-auto max-h-[90vh]">
-        {/* Header */}
-        <div className="flex items-start justify-between px-5 py-4 border-b border-border">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white font-data"
-                style={{ background: DISTRICT_COLORS[station.district] }}>
-                {station.district}
-              </span>
-              {station.coeResults?.length ? (
-                <span className="flex items-center gap-1 text-[10px] text-gold font-semibold">
-                  <Award className="h-3 w-3" /> CoE Winner
-                </span>
-              ) : null}
-            </div>
-            <h2 className="text-lg font-bold text-foreground leading-tight">{station.name}</h2>
-            {station.cooperative && (
-              <p className="text-xs text-muted-foreground mt-0.5">{station.cooperative}</p>
-            )}
-          </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors ml-4 flex-shrink-0">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-4">
-          {/* Key stats */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: "Altitude", value: `${station.altitudeStationM.toLocaleString()} m` },
-              { label: "Farm Range", value: `${station.altitudeFarmsM} m` },
-              { label: "Farmers", value: station.farmerCount ? station.farmerCount.toLocaleString() : "—" },
-              { label: "Established", value: station.established ? String(station.established) : "—" },
-            ].map(m => (
-              <div key={m.label} className="rounded bg-secondary p-3">
-                <p className="text-xs text-muted-foreground">{m.label}</p>
-                <p className="font-data text-base font-bold text-foreground mt-0.5">{m.value}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Processing & varietals */}
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-1.5">
-              <span className="text-xs text-muted-foreground w-20 flex-shrink-0 pt-0.5">Varietals</span>
-              {station.varietals.map(v => <CertBadge key={v} cert={v} />)}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              <span className="text-xs text-muted-foreground w-20 flex-shrink-0 pt-0.5">Processing</span>
-              {station.processing.map(p => <CertBadge key={p} cert={p} />)}
-            </div>
-            {station.certifications.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                <span className="text-xs text-muted-foreground w-20 flex-shrink-0 pt-0.5">Certified</span>
-                {station.certifications.map(c => (
-                  <span key={c} className="text-[10px] px-1.5 py-0.5 rounded border border-rwandaGreen/50 text-rwandaGreen font-data">{c}</span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* CoE results */}
-          {station.coeResults?.length ? (
-            <div className="rounded border border-gold/30 bg-gold/5 p-3">
-              <p className="text-xs font-semibold text-gold mb-2 flex items-center gap-1">
-                <Award className="h-3.5 w-3.5" /> Cup of Excellence Results
-              </p>
-              {station.coeResults.map((r, i) => (
-                <div key={i} className="text-xs text-muted-foreground font-data">
-                  {r.year} · {r.competition}{r.rank > 0 ? ` · Rank #${r.rank}` : ""}{r.score > 0 ? ` · Score ${r.score}` : ""}
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {/* Notable info */}
-          <p className="text-sm text-muted-foreground leading-relaxed">{station.notableInfo}</p>
-
-          {/* Location & contact */}
-          <div className="flex flex-wrap gap-2 pt-1 border-t border-border">
-            <a href={`https://www.google.com/maps?q=${station.lat},${station.lng}`}
-              target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-              <MapPin className="h-3.5 w-3.5" />
-              View on Maps
-            </a>
-            {station.contactUrl && (
-              <a href={station.contactUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-rwandaGreen hover:opacity-80 transition-opacity">
-                <ExternalLink className="h-3.5 w-3.5" />
-                Profile / Contact
-              </a>
-            )}
-          </div>
-
-          {/* Coordinate note */}
-          <p className="text-[10px] text-muted-foreground/60">{station.coordinateNote}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function StationsMap({ stations, selected, onSelect }: {
   stations: WashingStation[];
@@ -250,38 +145,140 @@ export default function Stations() {
           <StationsMap stations={filtered} selected={selected} onSelect={setSelected} />
         </div>
 
-        {/* Station list */}
-        <div className="lg:col-span-2 rounded-lg border border-border bg-card overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <p className="section-heading">{filtered.length} stations</p>
-            <div className="flex gap-2 text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rwandaGreen inline-block" /> Huye</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-gold inline-block" /> Nyamasheke</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{background:"#e67e22"}} /> Rusizi</span>
-            </div>
-          </div>
-          <div className="overflow-y-auto flex-1">
-            {filtered.map(s => (
-              <button key={s.id} onClick={() => setSelected(s)}
-                className={`w-full text-left px-4 py-3 border-b border-border/50 transition-colors hover:bg-secondary/50 ${selected?.id === s.id ? "bg-secondary" : ""}`}>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: DISTRICT_COLORS[s.district] }} />
-                      <p className="text-sm font-semibold text-foreground truncate">{s.name}</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{s.district} · {s.altitudeStationM}m · {s.farmerCount ? `${s.farmerCount.toLocaleString()} farmers` : "—"}</p>
-                    {s.certifications.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {s.certifications.map(c => <CertBadge key={c} cert={c} />)}
-                      </div>
-                    )}
+        {/* Right column: list or detail panel */}
+        <div className="lg:col-span-2 rounded-lg border border-border bg-card overflow-hidden flex flex-col" style={{ height: 480 }}>
+          {selected ? (
+            /* ── Detail panel ── */
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0">
+                <button onClick={() => setSelected(null)}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <X className="h-4 w-4" /> Back to list
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-1 p-4 space-y-4">
+                {/* Station name + badges */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white font-data"
+                      style={{ background: DISTRICT_COLORS[selected.district] }}>
+                      {selected.district}
+                    </span>
+                    {selected.coeResults?.length ? (
+                      <span className="flex items-center gap-1 text-[10px] text-gold font-semibold">
+                        <Award className="h-3 w-3" /> CoE Winner
+                      </span>
+                    ) : null}
                   </div>
-                  {s.coeResults?.length ? <Award className="h-4 w-4 text-gold flex-shrink-0 mt-0.5" /> : null}
+                  <h2 className="text-base font-bold text-foreground leading-tight">{selected.name}</h2>
+                  {selected.cooperative && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{selected.cooperative}</p>
+                  )}
                 </div>
-              </button>
-            ))}
-          </div>
+
+                {/* Key stats */}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "Altitude",    value: `${selected.altitudeStationM.toLocaleString()} m` },
+                    { label: "Farm Range",  value: `${selected.altitudeFarmsM} m` },
+                    { label: "Farmers",     value: selected.farmerCount ? selected.farmerCount.toLocaleString() : "—" },
+                    { label: "Established", value: selected.established ? String(selected.established) : "—" },
+                  ].map(m => (
+                    <div key={m.label} className="rounded bg-secondary p-2.5">
+                      <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                      <p className="font-data text-sm font-bold text-foreground mt-0.5">{m.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Varietals / processing / certs */}
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap gap-1.5 items-start">
+                    <span className="text-[10px] text-muted-foreground w-16 flex-shrink-0 pt-0.5">Varietals</span>
+                    {selected.varietals.map(v => <CertBadge key={v} cert={v} />)}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 items-start">
+                    <span className="text-[10px] text-muted-foreground w-16 flex-shrink-0 pt-0.5">Processing</span>
+                    {selected.processing.map(p => <CertBadge key={p} cert={p} />)}
+                  </div>
+                  {selected.certifications.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 items-start">
+                      <span className="text-[10px] text-muted-foreground w-16 flex-shrink-0 pt-0.5">Certified</span>
+                      {selected.certifications.map(c => (
+                        <span key={c} className="text-[10px] px-1.5 py-0.5 rounded border border-rwandaGreen/50 text-rwandaGreen font-data">{c}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* CoE results */}
+                {selected.coeResults?.length ? (
+                  <div className="rounded border border-gold/30 bg-gold/5 p-3">
+                    <p className="text-xs font-semibold text-gold mb-1.5 flex items-center gap-1">
+                      <Award className="h-3.5 w-3.5" /> Cup of Excellence
+                    </p>
+                    {selected.coeResults.map((r, i) => (
+                      <p key={i} className="text-xs text-muted-foreground font-data">
+                        {r.year}{r.rank > 0 ? ` · Rank #${r.rank}` : ""}{r.score > 0 ? ` · Score ${r.score}` : ""} · {r.competition}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+
+                {/* Notable info */}
+                <p className="text-xs text-muted-foreground leading-relaxed">{selected.notableInfo}</p>
+
+                {/* Links */}
+                <div className="flex flex-wrap gap-3 pt-1 border-t border-border">
+                  <a href={`https://www.google.com/maps?q=${selected.lat},${selected.lng}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    <MapPin className="h-3.5 w-3.5" /> View on Maps
+                  </a>
+                  {selected.contactUrl && (
+                    <a href={selected.contactUrl} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-rwandaGreen hover:opacity-80 transition-opacity">
+                      <ExternalLink className="h-3.5 w-3.5" /> Profile / Contact
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ── Station list ── */
+            <>
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
+                <p className="section-heading">{filtered.length} stations</p>
+                <div className="flex gap-2 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rwandaGreen inline-block" /> Huye</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-gold inline-block" /> Nyamasheke</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{background:"#e67e22"}} /> Rusizi</span>
+                </div>
+              </div>
+              <div className="overflow-y-auto flex-1">
+                {filtered.map(s => (
+                  <button key={s.id} onClick={() => setSelected(s)}
+                    className="w-full text-left px-4 py-3 border-b border-border/50 transition-colors hover:bg-secondary/50">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: DISTRICT_COLORS[s.district] }} />
+                          <p className="text-sm font-semibold text-foreground truncate">{s.name}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{s.district} · {s.altitudeStationM}m · {s.farmerCount ? `${s.farmerCount.toLocaleString()} farmers` : "—"}</p>
+                        {s.certifications.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {s.certifications.map(c => <CertBadge key={c} cert={c} />)}
+                          </div>
+                        )}
+                      </div>
+                      {s.coeResults?.length ? <Award className="h-4 w-4 text-gold flex-shrink-0 mt-0.5" /> : null}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -291,9 +288,6 @@ export default function Stations() {
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border border-white/40 bg-rwandaGreen inline-block" /> Standard station</span>
         <span className="ml-auto">Sources: NAEB · Alliance for Coffee Excellence · Specialty importers · March 2026</span>
       </div>
-
-      {/* Detail modal */}
-      {selected && <StationDetail station={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }

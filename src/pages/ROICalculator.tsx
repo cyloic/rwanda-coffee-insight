@@ -330,22 +330,42 @@ export default function ROICalculator() {
                 ];
                 return (
                   <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="section-heading mb-1">Calculation Breakdown</p>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Step-by-step derivation using your inputs for {region.name} over {term} months
+                    <p className="section-heading mb-1">How your return is calculated</p>
+                    <p className="text-[11px] text-muted-foreground mb-4">
+                      {region.name} · {term}-month term · live FRED price
                     </p>
-                    <div className="space-y-0 divide-y divide-border">
-                      {rows.map((row, i) => (
-                        <div key={i} className="py-2.5 grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5">
-                          <div>
-                            <p className="text-xs font-medium text-foreground">{row.label}</p>
-                            <p className="text-[11px] font-data text-muted-foreground">{row.formula}</p>
-                            {row.note && <p className="text-[10px] text-muted-foreground/70 mt-0.5 italic">{row.note}</p>}
-                          </div>
-                          <span className="font-data text-sm font-bold text-gold self-start pt-0.5 whitespace-nowrap">{row.value}</span>
-                        </div>
-                      ))}
+
+                    {/* 3-step flow */}
+                    <div className="flex items-stretch gap-2">
+                      {/* Step 1 */}
+                      <div className="flex-1 rounded-lg bg-secondary p-3 text-center">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Profit / kg</p>
+                        <p className="font-data text-xl font-bold text-gold">{usd(profitPerKg)}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{usd(exportPriceUSD)} export − ${PROD_COST_USD_PER_KG} cost</p>
+                      </div>
+
+                      <div className="flex items-center text-muted-foreground text-sm">→</div>
+
+                      {/* Step 2 */}
+                      <div className="flex-1 rounded-lg bg-secondary p-3 text-center">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Net ROI</p>
+                        <p className="font-data text-xl font-bold text-rwandaGreen">{pct(expNetROI)}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{pct(baseROI)} base − {region.riskPercent}% risk</p>
+                      </div>
+
+                      <div className="flex items-center text-muted-foreground text-sm">→</div>
+
+                      {/* Step 3 */}
+                      <div className="flex-1 rounded-lg bg-secondary p-3 text-center">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Expected Payout</p>
+                        <p className="font-data text-xl font-bold text-foreground">{fmt(results.expected)}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">+{pct(expNetROI)} on {fmt(amount)}</p>
+                      </div>
                     </div>
+
+                    <p className="text-[10px] text-muted-foreground mt-3">
+                      Sources: FRED (export price) · World Bank 2023 (production cost) · Rwanda Met. Agency (risk via altitude) · NAEB (8% specialty premium)
+                    </p>
                   </div>
                 );
               })()}

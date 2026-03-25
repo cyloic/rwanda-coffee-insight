@@ -53,16 +53,13 @@ export default function Backtest() {
     const exitUsd  = exitPoint.price  / exchangeRate;
 
     const priceChangePct   = ((exitUsd - entryUsd) / entryUsd) * 100;
-    const priceMultiplier  = exitUsd / entryUsd;
 
-    // ROI derived from actual price movement at entry
+    // ROI locked at entry price — this is what the investor agreed to at the time of investment
     const exportAtEntry    = entryUsd * RWANDA_PREMIUM;
     const marginAtEntry    = Math.max(0, (exportAtEntry - PROD_COST_USD) / exportAtEntry);
     const annualROI        = marginAtEntry * PARTICIPATION * ALT_FACTORS[regionId];
-    // Scale by actual price movement — if prices rose, returns were better
-    const adjustedAnnualROI = annualROI * priceMultiplier;
     const risk             = region.riskPercent / 100;
-    const expNetROI        = adjustedAnnualROI - risk * 0.5;
+    const expNetROI        = annualROI - risk * 0.5;
     const periodReturn     = expNetROI * (months / 12);
     const payout           = Math.round(amountRwf * (1 + periodReturn));
     const profit           = payout - amountRwf;
@@ -298,8 +295,7 @@ export default function Backtest() {
                     ["Participation rate",    `${(PARTICIPATION * 100).toFixed(0)}% of farmer margin`],
                     ["Altitude factor",       `${ALT_FACTORS[regionId]}× (${region.name} at ${regionId === 'huye' ? '1,950m' : regionId === 'nyamasheke' ? '1,850m' : regionId === 'rusizi' ? '1,700m' : regionId === 'nyaruguru' ? '1,700m' : '1,600m'})`],
                     ["Base annual ROI",       `${result.annualROIPct}%`],
-                    ["Price movement bonus",  `${result.priceChangePct >= 0 ? "+" : ""}${result.priceChangePct.toFixed(1)}% (actual FRED)`],
-                    ["Risk deduction",        `−${(region.riskPercent * 0.5).toFixed(1)}% (50% expected materialisation)`],
+                    ["Risk deduction",        `−${(region.riskPercent * 0.5).toFixed(1)}% (50% of ${region.riskPercent}% credit risk)`],
                     ["Period return",         `${result.roiPct}% over ${months} months`],
                   ].map(([label, val]) => (
                     <div key={label} className="flex justify-between gap-4 border-b border-border/50 pb-1 last:border-0">

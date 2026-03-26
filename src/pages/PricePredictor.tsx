@@ -10,7 +10,7 @@ import {
 
 export default function PricePredictor() {
   const { currency, rwfToUsd } = useCurrency();
-  const { history, forecast, isLive, forecastSource, volatility } = usePriceHistory();
+  const { history, forecast, isLive, forecastSource, volatility, validation } = usePriceHistory();
   const lastPrice = history[history.length - 1].price;
   const predictedPrice = forecast[forecast.length - 1].price;
   const priceChange = ((predictedPrice - lastPrice) / lastPrice * 100).toFixed(1);
@@ -157,9 +157,24 @@ export default function PricePredictor() {
       </div>
 
       {/* Methodology note */}
-      <div className="rounded border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
-        <span className="text-foreground font-semibold">Methodology: </span>
-        Price history is sourced from FRED (Federal Reserve Economic Data) — Other Mild Arabica monthly series, published by the ICO with a ~4–6 week lag. Daily values are linearly interpolated between monthly observations. The 30-day forecast uses momentum trend extrapolation: a weighted linear regression on the trailing 90 days, with uncertainty bands that widen over the horizon. Directional signals are most reliable within the first 14 days; treat Day 15–30 as indicative only.
+      <div className="rounded border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground leading-relaxed space-y-2">
+        <p>
+          <span className="text-foreground font-semibold">Methodology: </span>
+          Price history is sourced from FRED (Federal Reserve Economic Data) — Other Mild Arabica monthly series, published by the ICO with a ~4–6 week lag. Daily values are linearly interpolated between monthly observations. The 30-day forecast uses momentum trend extrapolation: a weighted linear regression on the trailing 90 days, with uncertainty bands that widen over the horizon. Directional signals are most reliable within the first 14 days; treat Day 15–30 as indicative only.
+        </p>
+        {validation && validation.mape > 0 && (
+          <p className="border-t border-border pt-2 font-mono">
+            <span className="text-foreground font-semibold">Back-validation </span>
+            <span className="text-muted-foreground">(last 30 days held out, trained on prior data) — </span>
+            <span className="text-rwandaGreen font-semibold">MAPE: {validation.mape}%</span>
+            <span className="text-muted-foreground"> · </span>
+            <span className="text-rwandaGreen font-semibold">RMSE: {validation.rmse.toLocaleString()} RWF/kg</span>
+            <span className="text-muted-foreground"> · Direction: </span>
+            <span className={validation.direction === 'correct' ? 'text-rwandaGreen font-semibold' : 'text-destructive font-semibold'}>
+              {validation.direction}
+            </span>
+          </p>
+        )}
       </div>
 
       {/* AI Advisor */}

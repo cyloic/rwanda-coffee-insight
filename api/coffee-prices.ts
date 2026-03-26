@@ -92,6 +92,44 @@ function trendForecast(history: DailyPoint[], days = 30): ForecastPoint[] {
   });
 }
 
+// ─── Back-validation ──────────────────────────────────────────────────────────
+// Measures how accurate the trend regression actually is by running it on
+// historical data where we already know the answer.
+// Method: hold out the last 30 days, train on everything before them,
+// predict those 30 days, compare predictions to real prices.
+function backValidate(history: DailyPoint[]): { mape: number; rmse: number; direction: 'correct' | 'incorrect' } {
+  const testSize = 30;
+  if (history.length < testSize + 30) return { mape: 0, rmse: 0, direction: 'correct' };
+
+  // Split: train on everything up to 30 days ago, test on the last 30 days
+  const trainHistory = history.slice(0, -testSize);
+  const testActual   = history.slice(-testSize);
+
+  // Run the same trend regression on training data, project 30 days
+  const predicted = trendForecast(trainHistory, testSize);
+
+  // MAPE — mean absolute percentage error
+  const mape = predicted.reduce((sum, p, i) => {
+    return sum + Math.abs((p.price - testActual[i].price) / testActual[i].price);
+  }, 0) / testSize * 100;
+
+  // RMSE — root mean squared error (in RWF)
+  const rmse = Math.sqrt(
+    predicted.reduce((sum, p, i) => sum + (p.price - testActual[i].price) ** 2, 0) / testSize
+  );
+
+  // Direction accuracy — did the forecast predict up or down correctly?
+  const trainLastPrice  = trainHistory[trainHistory.length - 1].price;
+  const predictedUp     = predicted[testSize - 1].price > trainLastPrice;
+  const actualUp        = testActual[testSize - 1].price > trainLastPrice;
+
+  return {
+    mape:      Math.round(mape * 10) / 10,
+    rmse:      Math.round(rmse),
+    direction: predictedUp === actualUp ? 'correct' : 'incorrect',
+  };
+}
+
 // ─── Volatility ───────────────────────────────────────────────────────────────
 // Annualised price volatility from monthly log-returns (std dev × √12).
 // Used in the AI advisor and risk display.
@@ -156,8 +194,9 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     const premiumPct     = ((RWANDA_PREMIUM_RATIO - 1) * 100).toFixed(1);
 
     // Build the daily history array and generate the 30-day trend forecast
-    const priceHistory  = interpolateToDaily(recentMonthly);
-    const priceForecast = trendForecast(priceHistory);
+    const priceHistory    = interpolateToDaily(recentMonthly);
+    const priceForecast   = trendForecast(priceHistory);
+    const modelValidation = backValidate(priceHistory);
 
     res.status(200).json({
       success: true,
@@ -180,6 +219,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
         bestCaseMultiplier:  bestCaseMultiplier(allMonthly),
         priceHistory,        // full daily history → used by dashboard chart + back-test
         priceForecast,       // 30-day trend forecast → used by price predictor page
+        modelValidation,     // back-validation metrics → MAPE, RMSE, direction accuracy
       },
     });
   } catch (error) {

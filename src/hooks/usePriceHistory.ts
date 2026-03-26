@@ -75,6 +75,7 @@ export function useLSTMPriceHistory() {
   const [volatility,         setVolatility]         = useState(14);
   const [bestCaseMultiplier, setBestCaseMultiplier] = useState(1.35);
   const [forecastSource,     setForecastSource]     = useState<'static' | 'trend' | 'lstm'>('static');
+  const [validation,         setValidation]         = useState<{ mape: number; rmse: number; direction: string } | null>(null);
 
   useEffect(() => {
     let liveHistory: PricePoint[] = [];
@@ -92,6 +93,7 @@ export function useLSTMPriceHistory() {
           setForecast(addBands(result.data.priceForecast)); // show trend forecast immediately
           if (result.data.priceVolatilityPct) setVolatility(result.data.priceVolatilityPct);
           if (result.data.bestCaseMultiplier) setBestCaseMultiplier(result.data.bestCaseMultiplier);
+          if (result.data.modelValidation)    setValidation(result.data.modelValidation);
           setIsLive(true);
           setForecastSource('trend');
 
@@ -132,5 +134,5 @@ export function useLSTMPriceHistory() {
   const livePrice       = history[history.length - 1]?.price ?? BASE_PRICE_RWF;
   const priceMultiplier = livePrice / BASE_PRICE_RWF;
 
-  return { history, forecast, isLive, loading, priceMultiplier, volatility, bestCaseMultiplier, forecastSource };
+  return { history, forecast, isLive, loading, priceMultiplier, volatility, bestCaseMultiplier, forecastSource, validation };
 }

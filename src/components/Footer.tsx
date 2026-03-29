@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-sidebar-background mt-16">
@@ -6,6 +8,10 @@ export default function Footer() {
           <span className="font-semibold text-foreground">CaféInvest Rwanda</span>
           <span className="opacity-40">|</span>
           <span>African Leadership University Research Initiative</span>
+          <span className="opacity-40">|</span>
+          <Link to="/legal" className="underline underline-offset-2 hover:text-foreground transition-colors">
+            EULA &amp; Privacy Policy
+          </Link>
         </div>
         <p className="text-center md:text-right max-w-md opacity-70">
           Investment intelligence platform. Data provided for analytical purposes only.

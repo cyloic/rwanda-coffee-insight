@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { to: "/backtest", label: "Back-Test" },
   { to: "/stations", label: "Stations" },
   { to: "/about", label: "About" },
+  { to: "/legal", label: "Legal" },
 ];
 
 export default function Navbar() {

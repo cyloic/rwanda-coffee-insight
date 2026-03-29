@@ -6,6 +6,7 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { usePriceHistory, computeSignal } from "@/hooks/usePriceHistory";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, Legend,
 } from "recharts";
 
 export default function PricePredictor() {
@@ -176,6 +177,65 @@ export default function PricePredictor() {
           </p>
         )}
       </div>
+
+      {/* Back-validation chart */}
+      {validation?.series && validation.series.length > 0 && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <p className="section-heading">Forecast vs Reality — Last 30 Days</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Trend line trained on data before this window · compared against what actually happened
+              </p>
+            </div>
+            <div className="flex gap-3 text-[11px] font-data">
+              <span className="text-rwandaGreen font-semibold">MAPE {validation.mape}%</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-gold font-semibold">RMSE {validation.rmse.toLocaleString()} RWF</span>
+              <span className="text-muted-foreground">·</span>
+              <span className={validation.direction === 'correct' ? 'text-rwandaGreen font-semibold' : 'text-destructive font-semibold'}>
+                Direction {validation.direction}
+              </span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={validation.series} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid stroke="hsl(24 12% 18%)" strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: "hsl(40 10% 55%)", fontSize: 10, fontFamily: "monospace" }}
+                tickLine={false}
+                axisLine={false}
+                interval={4}
+              />
+              <YAxis
+                domain={["auto", "auto"]}
+                tick={{ fill: "hsl(40 10% 55%)", fontSize: 10, fontFamily: "monospace" }}
+                tickFormatter={(v) => currency === "USD" ? `$${rwfToUsd(v).toFixed(2)}` : `${Math.round(v / 1000)}K`}
+                axisLine={false}
+                tickLine={false}
+                width={currency === "USD" ? 50 : 45}
+              />
+              <Tooltip
+                contentStyle={{ background: "hsl(24 15% 8%)", border: "1px solid hsl(24 12% 18%)", borderRadius: 6, fontSize: 11 }}
+                formatter={(value: number, name: string) => [
+                  currency === "USD" ? `$${rwfToUsd(value).toFixed(2)}/kg` : `${value.toLocaleString()} RWF/kg`,
+                  name === "actual" ? "Actual (FRED)" : "Predicted"
+                ]}
+                labelStyle={{ color: "hsl(40 10% 55%)" }}
+              />
+              <Legend
+                iconType="plainline"
+                iconSize={16}
+                wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+                formatter={(value) => value === "actual" ? "Actual (FRED)" : "Predicted"}
+              />
+              <Line type="monotone" dataKey="actual"    stroke="hsl(43 74% 57%)"   strokeWidth={2} dot={false} name="actual" />
+              <Line type="monotone" dataKey="predicted" stroke="hsl(152 100% 45%)" strokeWidth={2} dot={false} strokeDasharray="5 3" name="predicted" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* AI Advisor */}
       <div className="rounded-lg border border-border bg-card p-4 flex flex-col" style={{ minHeight: 340 }}>

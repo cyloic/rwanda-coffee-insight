@@ -75,7 +75,7 @@ export function useLSTMPriceHistory() {
   const [volatility,         setVolatility]         = useState(14);
   const [bestCaseMultiplier, setBestCaseMultiplier] = useState(1.35);
   const [forecastSource,     setForecastSource]     = useState<'static' | 'trend' | 'lstm'>('static');
-  const [validation,         setValidation]         = useState<{ mape: number; rmse: number; direction: string } | null>(null);
+  const [validation,         setValidation]         = useState<{ mape: number; rmse: number; direction: string; series?: { date: string; actual: number; predicted: number }[] } | null>(null);
 
   useEffect(() => {
     let liveHistory: PricePoint[] = [];

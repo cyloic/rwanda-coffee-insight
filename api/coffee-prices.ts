@@ -97,9 +97,12 @@ function trendForecast(history: DailyPoint[], days = 30): ForecastPoint[] {
 // historical data where we already know the answer.
 // Method: hold out the last 30 days, train on everything before them,
 // predict those 30 days, compare predictions to real prices.
-function backValidate(history: DailyPoint[]): { mape: number; rmse: number; direction: 'correct' | 'incorrect' } {
+function backValidate(history: DailyPoint[]): {
+  mape: number; rmse: number; direction: 'correct' | 'incorrect';
+  series: { date: string; actual: number; predicted: number }[];
+} {
   const testSize = 30;
-  if (history.length < testSize + 30) return { mape: 0, rmse: 0, direction: 'correct' };
+  if (history.length < testSize + 30) return { mape: 0, rmse: 0, direction: 'correct', series: [] };
 
   // Split: train on everything up to 30 days ago, test on the last 30 days
   const trainHistory = history.slice(0, -testSize);
@@ -119,14 +122,22 @@ function backValidate(history: DailyPoint[]): { mape: number; rmse: number; dire
   );
 
   // Direction accuracy — did the forecast predict up or down correctly?
-  const trainLastPrice  = trainHistory[trainHistory.length - 1].price;
-  const predictedUp     = predicted[testSize - 1].price > trainLastPrice;
-  const actualUp        = testActual[testSize - 1].price > trainLastPrice;
+  const trainLastPrice = trainHistory[trainHistory.length - 1].price;
+  const predictedUp    = predicted[testSize - 1].price > trainLastPrice;
+  const actualUp       = testActual[testSize - 1].price > trainLastPrice;
+
+  // Day-by-day series for the overlay chart
+  const series = testActual.map((d, i) => ({
+    date:      d.date.slice(5),           // MM-DD for chart labels
+    actual:    d.price,
+    predicted: predicted[i].price,
+  }));
 
   return {
     mape:      Math.round(mape * 10) / 10,
     rmse:      Math.round(rmse),
     direction: predictedUp === actualUp ? 'correct' : 'incorrect',
+    series,
   };
 }
 

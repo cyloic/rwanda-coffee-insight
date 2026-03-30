@@ -89,6 +89,14 @@ function generateResponse(input: string, ctx: MarketContext): string {
     return `Forecast method: momentum trend extrapolation on FRED Other Mild Arabica monthly data (ICO-sourced), interpolated to daily values.\n\nA weighted linear regression on the trailing 90 days generates the 30-day forward path. Uncertainty bands widen over the horizon — certainty starts at ~${conf}% on Day 1 and decays toward ~60% by Day 30.\n\nStrengths: grounded in the same data source the World Bank uses (FRED); no fabricated inputs.\nLimitations: linear trend cannot anticipate supply shocks or policy changes. Treat Day 1–14 as actionable and Day 15–30 as directional only.\n\nRule of thumb: build a 5–8% price buffer into any loan-to-value calculation rather than anchoring to the exact forecast price.`;
   }
 
+  // --- Confidence score breakdown ---
+  if (q.match(/confidence score|certainty score|how is.*confidence|where.*confidence|confidence.*come from|confidence.*calculat|certainty.*calculat|what.*certainty|breakdown.*confidence|confidence.*breakdown|explain.*certainty|explain.*confidence/)) {
+    const nextDayConf = Math.max(60, Math.round(93 - 1.08 * Math.sqrt(1) * 2.5));
+    const day7Conf    = Math.max(60, Math.round(93 - 1.08 * Math.sqrt(7) * 2.5));
+    const day30Conf   = Math.max(60, Math.round(93 - 1.08 * Math.sqrt(30) * 2.5));
+    return `Confidence score breakdown:\n\nThe score answers: "How reliable is this prediction?"\n\nFormula:\n  confidence = max(60%, 93% − (1.08 × √day × 2.5))\n\n• 93% — the model's best-case accuracy on Day 1, derived from back-testing against real FRED prices.\n• 1.08 — the model's average forecast error (MAPE) measured during training: on average, predictions were 1.08% off the actual price.\n• √day — uncertainty grows with the square root of days ahead, not linearly. Predictions get less reliable over time, but the decay slows down.\n• 2.5 — a scaling factor that converts the error percentage into confidence-point drops.\n• max(60%) — the score never goes below 60%, even at Day 30.\n\nExamples at today's prices ($${ctx.forecastPriceUsd?.toFixed(2) ?? '—'}/kg forecast):\n  Day 1  → ${nextDayConf}% certainty  (Trend Forecast – Next Day card)\n  Day 7  → ${day7Conf}% certainty\n  Day 30 → ${day30Conf}% certainty\n\nThe "Certainty" shown on the dashboard is always Day 1's score. The "Trend Certainty" summary card shows the average across all 30 days (≈${conf}%).`;
+  }
+
   // --- Risk ---
   if (q.match(/risk|volatil|danger|concern|climate|weather|cbd|disease|currency|hedge/)) {
     return `Current annualised price volatility: ${vol}%.\n\nRisk profile by category:\n\n1. Market risk — ${vol}% volatility. Rwanda specialty arabica is less volatile than commodity grade due to premium pricing, but still susceptible to global demand shocks.\n\n2. Climate risk — CBD (coffee berry disease) pressure increases below 1,700m. Karongi (1,600m) and Rusizi (1,700m) are most exposed. Huye (1,950m) and Nyamasheke (1,850m) have historically lower crop loss rates.\n\n3. Currency risk — RWF has depreciated ~4–6% annually vs USD historically. A 5% RWF drop on a $100K loan = ~$5K loss in USD terms unless hedged.\n\n4. Seasonal risk — Rwanda has two harvests: main crop (April–June) and fly crop (October–November). Q3 supply gaps can temporarily spike local prices.`;
@@ -114,6 +122,7 @@ const SUGGESTIONS = [
   'Compare all regions by ROI',
   'What is driving current prices?',
   'What are the main risks?',
+  'How is the confidence score calculated?',
 ];
 
 export default function CoffeeChat({ context }: Props) {
